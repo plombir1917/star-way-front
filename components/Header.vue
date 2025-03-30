@@ -108,12 +108,12 @@
             >
               <ul class="py-1">
                 <li>
-                  <a
-                    href="#"
+                  <NuxtLink
+                    to="/profile"
                     class="block px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
                     Профиль
-                  </a>
+                  </NuxtLink>
                 </li>
                 <li>
                   <a
@@ -143,6 +143,7 @@
 <script setup>
 import { ref } from 'vue';
 import ThemeToggle from './ThemeToggle.vue';
+import { NuxtLink } from '#components';
 
 const isProfileMenuOpen = ref(false);
 </script>
