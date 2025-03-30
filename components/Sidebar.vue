@@ -35,10 +35,10 @@
       <ul class="space-y-2 px-2">
         <li>
           <NuxtLink
-            to="/admin"
+            to="/"
             :class="[
               'flex items-center p-2 rounded-lg transition duration-200',
-              isActive('/admin')
+              isActive('/')
                 ? 'bg-purple-100 text-purple-600 dark:bg-purple-700 dark:text-purple-200'
                 : 'text-gray-600 hover:bg-purple-100 dark:text-gray-300 dark:hover:bg-purple-700',
             ]"
@@ -63,10 +63,10 @@
         </li>
         <li>
           <NuxtLink
-            to="/admin/users"
+            to="/users"
             :class="[
               'flex items-center p-2 rounded-lg transition duration-200',
-              isActive('/admin/users')
+              isActive('/users')
                 ? 'bg-purple-100 text-purple-600 dark:bg-purple-700 dark:text-purple-200'
                 : 'text-gray-600 hover:bg-purple-100 dark:text-gray-300 dark:hover:bg-purple-700',
             ]"
@@ -91,10 +91,66 @@
         </li>
         <li>
           <NuxtLink
-            to="/admin/settings"
+            to="/events"
             :class="[
               'flex items-center p-2 rounded-lg transition duration-200',
-              isActive('/admin/settings')
+              isActive('/events')
+                ? 'bg-purple-100 text-purple-600 dark:bg-purple-700 dark:text-purple-200'
+                : 'text-gray-600 hover:bg-purple-100 dark:text-gray-300 dark:hover:bg-purple-700',
+            ]"
+          >
+            <svg
+              v-if="!isCollapsed"
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5 mr-3 text-purple-600 dark:text-purple-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            <span v-if="!isCollapsed" class="ml-3">Мероприятия</span>
+          </NuxtLink>
+        </li>
+        <li>
+          <NuxtLink
+            to="/groups"
+            :class="[
+              'flex items-center p-2 rounded-lg transition duration-200',
+              isActive('/groups')
+                ? 'bg-purple-100 text-purple-600 dark:bg-purple-700 dark:text-purple-200'
+                : 'text-gray-600 hover:bg-purple-100 dark:text-gray-300 dark:hover:bg-purple-700',
+            ]"
+          >
+            <svg
+              v-if="!isCollapsed"
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5 mr-3 text-purple-600 dark:text-purple-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5 5 0 0110 0v2m0 0a3 3 0 01-3 3H7a3 3 0 01-3-3v-2"
+              />
+            </svg>
+            <span v-if="!isCollapsed" class="ml-3">Коллективы</span>
+          </NuxtLink>
+        </li>
+        <li>
+          <NuxtLink
+            to="/settings"
+            :class="[
+              'flex items-center p-2 rounded-lg transition duration-200',
+              isActive('/settings')
                 ? 'bg-purple-100 text-purple-600 dark:bg-purple-700 dark:text-purple-200'
                 : 'text-gray-600 hover:bg-purple-100 dark:text-gray-300 dark:hover:bg-purple-700',
             ]"

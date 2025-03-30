@@ -129,8 +129,8 @@
 </template>
 
 <script setup>
-import AdminHeader from '~/components/admin/Header.vue';
-import AdminSidebar from '~/components/admin/Sidebar.vue';
+import AdminHeader from '~/components/Header.vue';
+import AdminSidebar from '~/components/Sidebar.vue';
 
 // Пример данных пользователей
 const users = [
