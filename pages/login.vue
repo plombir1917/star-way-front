@@ -116,6 +116,6 @@ function handleLogin() {
   console.log('Вход...');
 
   // Перенаправление на страницу /admin после успешного входа
-  navigateTo('/admin');
+  navigateTo('/');
 }
 </script>
