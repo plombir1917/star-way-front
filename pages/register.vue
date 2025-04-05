@@ -2,6 +2,28 @@
   <div
     class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900"
   >
+    <!-- Кнопка "На главную" -->
+    <NuxtLink
+      to="/"
+      class="absolute top-4 left-4 px-3 py-1.5 bg-transparent border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition duration-200 flex items-center text-sm"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-4 w-4 mr-1"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M10 19l-7-7m0 0l7-7m-7 7h18"
+        />
+      </svg>
+      На главную
+    </NuxtLink>
+
     <!-- Container for Form and Image -->
     <div
       class="flex w-full max-w-4xl bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden"

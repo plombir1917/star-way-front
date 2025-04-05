@@ -35,10 +35,10 @@
       <ul class="space-y-2 px-2">
         <li>
           <NuxtLink
-            to="/"
+            to="/admin"
             :class="[
               'flex items-center p-2 rounded-lg transition duration-200',
-              isActive('/')
+              isActive('/admin')
                 ? 'bg-purple-100 text-purple-600 dark:bg-purple-700 dark:text-purple-200'
                 : 'text-gray-600 hover:bg-purple-100 dark:text-gray-300 dark:hover:bg-purple-700',
             ]"
@@ -63,10 +63,10 @@
         </li>
         <li>
           <NuxtLink
-            to="/users"
+            to="/admin/users"
             :class="[
               'flex items-center p-2 rounded-lg transition duration-200',
-              isActive('/users')
+              isActive('/admin/users')
                 ? 'bg-purple-100 text-purple-600 dark:bg-purple-700 dark:text-purple-200'
                 : 'text-gray-600 hover:bg-purple-100 dark:text-gray-300 dark:hover:bg-purple-700',
             ]"
@@ -91,10 +91,10 @@
         </li>
         <li>
           <NuxtLink
-            to="/events"
+            to="/admin/events"
             :class="[
               'flex items-center p-2 rounded-lg transition duration-200',
-              isActive('/events')
+              isActive('/admin/events')
                 ? 'bg-purple-100 text-purple-600 dark:bg-purple-700 dark:text-purple-200'
                 : 'text-gray-600 hover:bg-purple-100 dark:text-gray-300 dark:hover:bg-purple-700',
             ]"
@@ -119,10 +119,10 @@
         </li>
         <li>
           <NuxtLink
-            to="/groups"
+            to="/admin/groups"
             :class="[
               'flex items-center p-2 rounded-lg transition duration-200',
-              isActive('/groups')
+              isActive('/admin/groups')
                 ? 'bg-purple-100 text-purple-600 dark:bg-purple-700 dark:text-purple-200'
                 : 'text-gray-600 hover:bg-purple-100 dark:text-gray-300 dark:hover:bg-purple-700',
             ]"
@@ -147,10 +147,10 @@
         </li>
         <li>
           <NuxtLink
-            to="/settings"
+            to="/admin/settings"
             :class="[
               'flex items-center p-2 rounded-lg transition duration-200',
-              isActive('/settings')
+              isActive('/admin/settings')
                 ? 'bg-purple-100 text-purple-600 dark:bg-purple-700 dark:text-purple-200'
                 : 'text-gray-600 hover:bg-purple-100 dark:text-gray-300 dark:hover:bg-purple-700',
             ]"
