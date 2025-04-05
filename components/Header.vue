@@ -125,7 +125,8 @@
                 </li>
                 <li>
                   <a
-                    href="/login"
+                    href="#"
+                    @click.prevent="handleLogout"
                     class="block px-4 py-2 text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
                     Выйти
@@ -144,6 +145,14 @@
 import { ref } from 'vue';
 import ThemeToggle from './ThemeToggle.vue';
 import { NuxtLink } from '#components';
+import { navigateTo } from '#app';
 
 const isProfileMenuOpen = ref(false);
+
+const handleLogout = () => {
+  // Удаляем токен из localStorage
+  localStorage.removeItem('auth_token');
+  // Перенаправляем на страницу входа
+  navigateTo('/login');
+};
 </script>
