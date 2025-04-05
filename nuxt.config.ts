@@ -18,12 +18,12 @@ export default defineNuxtConfig({
         {
           name: 'description',
           content:
-            'Star Way - платформа для управления танцевальными мероприятиями, регистрации участников и развития творческого потенциала',
+            'Star Way - профессиональное танцевальное ивент-агентство. Организация мероприятий, шоу-программы, мастер-классы.',
         },
         {
           name: 'keywords',
           content:
-            'танцевальные мероприятия, ивент-агентство, регистрация участников, мастер-классы, танцы, творчество',
+            'танцевальное агентство, ивент агентство, организация мероприятий, шоу программы, мастер классы',
         },
         { name: 'author', content: 'Star Way' },
         {
@@ -33,11 +33,14 @@ export default defineNuxtConfig({
         {
           property: 'og:description',
           content:
-            'Платформа для управления танцевальными мероприятиями и регистрации участников',
+            'Star Way - профессиональное танцевальное ивент-агентство. Организация мероприятий, шоу-программы, мастер-классы.',
         },
         { property: 'og:type', content: 'website' },
         { property: 'og:url', content: 'https://starway.ru' },
-        { property: 'og:image', content: '/favicon.png' },
+        {
+          property: 'og:image',
+          content: 'https://starway.ru/android-chrome-512x512.png',
+        },
         { name: 'twitter:card', content: 'summary_large_image' },
         {
           name: 'twitter:title',
@@ -46,13 +49,31 @@ export default defineNuxtConfig({
         {
           name: 'twitter:description',
           content:
-            'Платформа для управления танцевальными мероприятиями и регистрации участников',
+            'Star Way - профессиональное танцевальное ивент-агентство. Организация мероприятий, шоу-программы, мастер-классы.',
         },
-        { name: 'twitter:image', content: '/favicon.png' },
+        {
+          name: 'twitter:image',
+          content: 'https://starway.ru/android-chrome-512x512.png',
+        },
       ],
       link: [
-        { rel: 'icon', type: 'image/png', href: '/favicon.png' },
-        { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
+        {
+          rel: 'icon',
+          type: 'image/png',
+          sizes: '32x32',
+          href: '/favicon-32x32.png',
+        },
+        {
+          rel: 'icon',
+          type: 'image/png',
+          sizes: '16x16',
+          href: '/favicon-16x16.png',
+        },
+        {
+          rel: 'apple-touch-icon',
+          sizes: '180x180',
+          href: '/apple-touch-icon.png',
+        },
         { rel: 'manifest', href: '/site.webmanifest' },
         { rel: 'mask-icon', href: '/safari-pinned-tab.svg', color: '#7c3aed' },
         {
