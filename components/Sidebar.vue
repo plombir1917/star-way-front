@@ -185,14 +185,21 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 
 const isCollapsed = ref(false);
 const route = useRoute();
+const isDarkMode = ref(false);
 
 // Функция для проверки активного маршрута
 function isActive(path) {
   return route.path === path;
 }
+
+// Загрузка темы при монтировании компонента
+onMounted(() => {
+  const savedTheme = localStorage.getItem('theme');
+  isDarkMode.value = savedTheme === 'dark';
+});
 </script>
