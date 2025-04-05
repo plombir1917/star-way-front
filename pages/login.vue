@@ -167,6 +167,7 @@ async function handleLogin() {
     if (!response.ok) {
       throw new Error(data.message || `Ошибка сервера: ${response.status}`);
     }
+    console.log(data);
 
     // Сохраняем токен
     if (data.token) {
