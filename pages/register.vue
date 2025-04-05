@@ -37,9 +37,28 @@
               Имя
             </label>
             <input
+              v-model="formData.name"
               id="name"
               type="text"
               placeholder="Введите ваше имя"
+              required
+              class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200"
+            />
+          </div>
+
+          <!-- Surname Field -->
+          <div>
+            <label
+              for="surname"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Фамилия
+            </label>
+            <input
+              v-model="formData.surname"
+              id="surname"
+              type="text"
+              placeholder="Введите вашу фамилию"
               required
               class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200"
             />
@@ -54,6 +73,7 @@
               Email
             </label>
             <input
+              v-model="formData.email"
               id="email"
               type="email"
               placeholder="Введите ваш email"
@@ -71,6 +91,7 @@
               Пароль
             </label>
             <input
+              v-model="formData.password"
               id="password"
               type="password"
               placeholder="Введите пароль"
@@ -88,6 +109,7 @@
               Подтвердите пароль
             </label>
             <input
+              v-model="confirmPassword"
               id="confirm-password"
               type="password"
               placeholder="Подтвердите пароль"
@@ -99,10 +121,20 @@
           <!-- Register Button -->
           <button
             type="submit"
-            class="w-full py-2 px-4 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+            :disabled="isLoading"
+            class="w-full py-2 px-4 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Зарегистрироваться
+            <span v-if="isLoading">Загрузка...</span>
+            <span v-else>Зарегистрироваться</span>
           </button>
+
+          <!-- Error Message -->
+          <div
+            v-if="errorMessage"
+            class="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded"
+          >
+            {{ errorMessage }}
+          </div>
         </form>
 
         <!-- Login Link -->
@@ -121,9 +153,60 @@
 </template>
 
 <script setup>
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+const confirmPassword = ref('');
+const formData = ref({
+  name: '',
+  surname: '',
+  email: '',
+  password: '',
+});
+
+const errorMessage = ref('');
+const isLoading = ref(false);
+
 // Обработчик регистрации
-function handleRegister() {
-  // Логика регистрации (например, отправка данных на сервер)
-  console.log('Регистрация...');
+async function handleRegister() {
+  try {
+    // Проверка совпадения паролей
+    if (formData.value.password !== confirmPassword.value) {
+      errorMessage.value = 'Пароли не совпадают';
+      return;
+    }
+
+    isLoading.value = true;
+    errorMessage.value = '';
+
+    // Создаем объект с данными в формате, который ожидает бэкенд
+    const registerData = {
+      name: formData.value.name,
+      surname: formData.value.surname,
+      email: formData.value.email,
+      password: formData.value.password,
+    };
+
+    const response = await fetch('http://localhost:5000/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify(registerData),
+    });
+
+    if (!response.ok) {
+      throw new Error(data.message || `Ошибка сервера: ${response.status}`);
+    }
+
+    // Успешная регистрация
+    router.push('/login');
+  } catch (error) {
+    errorMessage.value = error.message;
+  } finally {
+    isLoading.value = false;
+  }
 }
 </script>
