@@ -2,6 +2,28 @@
   <div
     class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900"
   >
+    <!-- Кнопка "На главную" -->
+    <NuxtLink
+      to="/"
+      class="absolute top-4 left-4 px-3 py-1.5 bg-transparent border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition duration-200 flex items-center text-sm"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-4 w-4 mr-1"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M10 19l-7-7m0 0l7-7m-7 7h18"
+        />
+      </svg>
+      На главную
+    </NuxtLink>
+
     <!-- Container for Form and Image -->
     <div
       class="flex w-full max-w-4xl bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden"
@@ -37,6 +59,7 @@
               Email
             </label>
             <input
+              v-model="formData.email"
               id="email"
               type="email"
               placeholder="Введите ваш email"
@@ -54,6 +77,7 @@
               Пароль
             </label>
             <input
+              v-model="formData.password"
               id="password"
               type="password"
               placeholder="Введите пароль"
@@ -75,21 +99,25 @@
                 >
               </label>
             </div>
-            <NuxtLink
-              to="/forgot-password"
-              class="text-sm font-medium text-purple-600 hover:text-purple-500 dark:text-purple-400 dark:hover:text-purple-300"
-            >
-              Забыли пароль?
-            </NuxtLink>
           </div>
 
           <!-- Login Button -->
           <button
             type="submit"
-            class="w-full py-2 px-4 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+            :disabled="isLoading"
+            class="w-full py-2 px-4 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Войти
+            <span v-if="isLoading">Загрузка...</span>
+            <span v-else>Войти</span>
           </button>
+
+          <!-- Error Message -->
+          <div
+            v-if="errorMessage"
+            class="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded"
+          >
+            {{ errorMessage }}
+          </div>
         </form>
 
         <!-- Register Link -->
@@ -108,14 +136,53 @@
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import { navigateTo } from '#app';
 
-// Обработчик входа
-function handleLogin() {
-  // Логика входа (например, отправка данных на сервер)
-  console.log('Вход...');
+const formData = ref({
+  email: '',
+  password: '',
+});
 
-  // Перенаправление на страницу /admin после успешного входа
-  navigateTo('/');
+const errorMessage = ref('');
+const isLoading = ref(false);
+
+// Обработчик входа
+async function handleLogin() {
+  try {
+    isLoading.value = true;
+    errorMessage.value = '';
+
+    const response = await fetch('http://localhost:5000/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify(formData.value),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || `Ошибка сервера: ${response.status}`);
+    }
+    console.log(data);
+
+    // Сохраняем токен
+    if (data.token) {
+      localStorage.setItem('auth_token', data.token);
+      console.log('Токен успешно сохранен');
+    } else {
+      throw new Error('Токен не получен от сервера');
+    }
+
+    // Успешный вход
+    navigateTo('/admin');
+  } catch (error) {
+    errorMessage.value = error.message;
+  } finally {
+    isLoading.value = false;
+  }
 }
 </script>

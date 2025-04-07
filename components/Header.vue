@@ -1,64 +1,141 @@
 <template>
-  <header class="bg-white shadow-sm dark:bg-gray-800">
+  <header
+    class="bg-white shadow-sm dark:bg-gray-800 fixed top-0 right-0 left-0 z-20 transition-all duration-300"
+    :class="{ 'ml-16': isSidebarCollapsed, 'ml-64': !isSidebarCollapsed }"
+  >
     <div
       class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center"
     >
-      <!-- Левая часть: Заголовок -->
-      <div class="flex items-center space-x-4">
+      <!-- Левая часть: Заголовок и поиск -->
+      <div class="flex items-center space-x-4 flex-1">
         <h1 class="text-2xl font-semibold text-gray-800 dark:text-gray-200">
-          Административная панель
+          {{ pageTitle }}
         </h1>
 
         <!-- Поиск -->
-        <div class="relative hidden md:block">
-          <input
-            type="text"
-            placeholder="Поиск..."
-            class="w-48 pl-10 pr-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+        <div class="relative hidden md:block flex-1 max-w-md">
+          <div class="relative">
+            <input
+              type="text"
+              v-model="searchQuery"
+              placeholder="Поиск..."
+              class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200"
+              @keyup.enter="handleSearch"
             />
-          </svg>
+            <div
+              class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5 text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Правая часть: Управление темой, уведомления и профиль -->
       <div class="flex items-center space-x-4">
         <!-- Уведомления -->
-        <button
-          class="relative p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-200"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6 text-gray-500 dark:text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+        <div class="relative">
+          <button
+            @click="toggleNotifications"
+            class="relative p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-200"
+            aria-label="Уведомления"
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.841A6.002 6.002 0 006 11v3.159a2.032 2.032 0 01-1.405 1.855L9 17h6z"
-            />
-          </svg>
-          <span
-            class="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-white bg-red-500 rounded-full"
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-6 w-6 text-gray-500 dark:text-gray-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341A6.002 6.002 0 006 11v3.159a2.032 2.032 0 01-1.405 1.855L9 17h6z"
+              />
+            </svg>
+            <span
+              v-if="unreadNotifications > 0"
+              class="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-white bg-red-500 rounded-full"
+            >
+              {{ unreadNotifications }}
+            </span>
+          </button>
+
+          <!-- Выпадающее меню уведомлений -->
+          <div
+            v-if="showNotifications"
+            class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 z-50"
           >
-            3
-          </span>
-        </button>
+            <div class="p-4">
+              <h3
+                class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4"
+              >
+                Уведомления
+              </h3>
+              <div class="space-y-4 max-h-96 overflow-y-auto">
+                <div
+                  v-if="notifications.length === 0"
+                  class="text-center text-gray-500 dark:text-gray-400 py-4"
+                >
+                  Нет новых уведомлений
+                </div>
+                <div
+                  v-for="(notification, index) in notifications"
+                  :key="index"
+                  class="flex items-start p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition duration-200"
+                >
+                  <div class="flex-shrink-0">
+                    <div
+                      class="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center"
+                    >
+                      <component
+                        :is="notification.icon"
+                        class="h-4 w-4 text-purple-600 dark:text-purple-400"
+                      />
+                    </div>
+                  </div>
+                  <div class="ml-3 flex-1">
+                    <p
+                      class="text-sm font-medium text-gray-800 dark:text-gray-200"
+                    >
+                      {{ notification.title }}
+                    </p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                      {{ notification.message }}
+                    </p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                      {{ notification.time }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700"
+              >
+                <button
+                  @click="markAllAsRead"
+                  class="w-full text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300"
+                >
+                  Отметить все как прочитанные
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <!-- Переключатель темы -->
         <ThemeToggle />
@@ -68,15 +145,16 @@
           <button
             @click="isProfileMenuOpen = !isProfileMenuOpen"
             class="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-200"
+            aria-label="Меню профиля"
           >
             <img
-              src="https://i.pravatar.cc/40"
+              :src="userAvatar"
               alt="User Avatar"
-              class="w-8 h-8 rounded-full object-cover"
+              class="w-8 h-8 rounded-full object-cover border-2 border-purple-500"
             />
-            <span class="hidden md:block text-gray-800 dark:text-gray-200"
-              >Имя Фамилия</span
-            >
+            <span class="hidden md:block text-gray-800 dark:text-gray-200">
+              {{ userName }}
+            </span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="h-4 w-4 text-gray-500 dark:text-gray-400"
@@ -104,34 +182,40 @@
           >
             <div
               v-if="isProfileMenuOpen"
-              class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 z-10"
+              class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 z-50"
             >
-              <ul class="py-1">
-                <li>
-                  <NuxtLink
-                    to="/profile"
-                    class="block px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+              <div class="py-1">
+                <div
+                  class="px-4 py-2 border-b border-gray-200 dark:border-gray-700"
+                >
+                  <p
+                    class="text-sm font-medium text-gray-800 dark:text-gray-200"
                   >
-                    Профиль
-                  </NuxtLink>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    class="block px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  >
-                    Настройки
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="/login"
-                    class="block px-4 py-2 text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  >
-                    Выйти
-                  </a>
-                </li>
-              </ul>
+                    {{ userName }}
+                  </p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ userEmail }}
+                  </p>
+                </div>
+                <NuxtLink
+                  to="/admin/profile"
+                  class="block px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  Профиль
+                </NuxtLink>
+                <NuxtLink
+                  to="/admin/settings"
+                  class="block px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  Настройки
+                </NuxtLink>
+                <button
+                  @click="handleLogout"
+                  class="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  Выйти
+                </button>
+              </div>
             </div>
           </transition>
         </div>
@@ -141,9 +225,133 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import ThemeToggle from './ThemeToggle.vue';
-import { NuxtLink } from '#components';
 
+const route = useRoute();
+const router = useRouter();
 const isProfileMenuOpen = ref(false);
+const showNotifications = ref(false);
+const searchQuery = ref('');
+const isSidebarCollapsed = ref(false);
+
+// Данные пользователя
+const userName = ref('Имя Фамилия');
+const userEmail = ref('user@example.com');
+const userAvatar = ref('https://i.pravatar.cc/40');
+
+// Уведомления
+const notifications = ref([
+  {
+    title: 'Новое мероприятие',
+    message: 'Добавлено новое мероприятие "Танцевальный фестиваль"',
+    time: '5 минут назад',
+    icon: 'CalendarIcon',
+    read: false,
+  },
+  {
+    title: 'Новый пользователь',
+    message: 'Зарегистрирован новый пользователь',
+    time: '1 час назад',
+    icon: 'UserIcon',
+    read: false,
+  },
+]);
+
+const unreadNotifications = computed(() => {
+  return notifications.value.filter((n) => !n.read).length;
+});
+
+// Заголовок страницы
+const pageTitle = computed(() => {
+  const titles = {
+    '/admin': 'Панель управления',
+    '/admin/users': 'Пользователи',
+    '/admin/events': 'Мероприятия',
+    '/admin/groups': 'Коллективы',
+    '/admin/settings': 'Настройки',
+    '/admin/profile': 'Профиль',
+  };
+  return titles[route.path] || 'Панель управления';
+});
+
+// Обработчики
+const handleSearch = () => {
+  // Реализация поиска
+  console.log('Поиск:', searchQuery.value);
+};
+
+const toggleNotifications = () => {
+  showNotifications.value = !showNotifications.value;
+};
+
+const markAllAsRead = () => {
+  notifications.value.forEach((notification) => {
+    notification.read = true;
+  });
+};
+
+const handleLogout = () => {
+  // Удаляем токен из localStorage
+  localStorage.removeItem('auth_token');
+  // Перенаправляем на страницу входа
+  router.push('/login');
+};
+
+// Закрытие выпадающих меню при клике вне их
+const handleClickOutside = (event) => {
+  const profileMenu = document.querySelector('.profile-menu');
+  const notificationsMenu = document.querySelector('.notifications-menu');
+
+  if (profileMenu && !profileMenu.contains(event.target)) {
+    isProfileMenuOpen.value = false;
+  }
+
+  if (notificationsMenu && !notificationsMenu.contains(event.target)) {
+    showNotifications.value = false;
+  }
+};
+
+// Загрузка состояния сайдбара
+onMounted(() => {
+  const savedSidebarState = localStorage.getItem('sidebarCollapsed');
+  if (savedSidebarState !== null) {
+    isSidebarCollapsed.value = savedSidebarState === 'true';
+  }
+
+  document.addEventListener('click', handleClickOutside);
+});
+
+// Отслеживание изменений состояния сайдбара
+watch(
+  () => localStorage.getItem('sidebarCollapsed'),
+  (newValue) => {
+    isSidebarCollapsed.value = newValue === 'true';
+  }
+);
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside);
+});
 </script>
+
+<style scoped>
+.overflow-y-auto {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 3px;
+}
+</style>
