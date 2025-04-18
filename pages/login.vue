@@ -153,14 +153,17 @@ async function handleLogin() {
     isLoading.value = true;
     errorMessage.value = '';
 
-    const response = await fetch('http://localhost:5000/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify(formData.value),
-    });
+    const response = await fetch(
+      'https://star-way-service.onrender.com/login',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify(formData.value),
+      }
+    );
 
     const data = await response.json();
 
@@ -170,8 +173,8 @@ async function handleLogin() {
     console.log(data);
 
     // Сохраняем токен
-    if (data.token) {
-      localStorage.setItem('auth_token', data.token);
+    if (data.access_token) {
+      localStorage.setItem('access_token', data.access_token);
       console.log('Токен успешно сохранен');
     } else {
       throw new Error('Токен не получен от сервера');
