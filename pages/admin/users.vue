@@ -154,11 +154,22 @@
               class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
             >
               <tr
-                v-if="filteredUsers.length === 0"
+                v-if="!users.length"
                 class="hover:bg-gray-50 dark:hover:bg-gray-700 transition duration-150"
               >
                 <td
-                  colspan="6"
+                  colspan="5"
+                  class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400"
+                >
+                  Загрузка пользователей...
+                </td>
+              </tr>
+              <tr
+                v-else-if="filteredUsers.length === 0"
+                class="hover:bg-gray-50 dark:hover:bg-gray-700 transition duration-150"
+              >
+                <td
+                  colspan="5"
                   class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400"
                 >
                   Пользователи не найдены
@@ -175,13 +186,11 @@
                       <img
                         :src="
                           user.avatar ||
-                          'https://ui-avatars.com/api/?name=' +
-                            user.name +
-                            '+' +
-                            user.surname +
-                            '&background=6366f1&color=fff'
+                          `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                            getFullName(user)
+                          )}&background=6366f1&color=fff`
                         "
-                        :alt="user.name"
+                        :alt="getFullName(user)"
                         class="h-10 w-10 rounded-full object-cover"
                       />
                     </div>
@@ -189,28 +198,20 @@
                       <div
                         class="text-sm font-medium text-gray-900 dark:text-white"
                       >
-                        {{ user.name }} {{ user.surname }}
-                      </div>
-                      <div class="text-sm text-gray-500 dark:text-gray-400">
-                        {{ user.email }}
+                        {{ getFullName(user) }}
                       </div>
                     </div>
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <span
-                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                    :class="{
-                      'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200':
-                        user.status === 'active',
-                      'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200':
-                        user.status === 'inactive',
-                      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200':
-                        user.status === 'pending',
-                    }"
-                  >
-                    {{ statusLabels[user.status] }}
-                  </span>
+                  <div class="text-sm text-gray-900 dark:text-white">
+                    {{ user.email }}
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-900 dark:text-white">
+                    {{ user.phone }}
+                  </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span
@@ -227,15 +228,20 @@
                     {{ roleLabels[user.role] }}
                   </span>
                 </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"
-                >
-                  {{ formatDate(user.createdAt) }}
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"
-                >
-                  {{ formatDate(user.lastLogin) }}
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span
+                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                    :class="{
+                      'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200':
+                        user.status === 'active',
+                      'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200':
+                        user.status === 'inactive',
+                      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200':
+                        user.status === 'pending',
+                    }"
+                  >
+                    {{ statusLabels[user.status] }}
+                  </span>
                 </td>
                 <td
                   class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
@@ -431,20 +437,6 @@
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div>
                         <label
-                          for="name"
-                          class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                        >
-                          Имя
-                        </label>
-                        <input
-                          type="text"
-                          id="name"
-                          v-model="userForm.name"
-                          class="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition duration-200"
-                        />
-                      </div>
-                      <div>
-                        <label
                           for="surname"
                           class="block text-sm font-medium text-gray-700 dark:text-gray-300"
                         >
@@ -457,6 +449,48 @@
                           class="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition duration-200"
                         />
                       </div>
+                      <div>
+                        <label
+                          for="name"
+                          class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                        >
+                          Имя
+                        </label>
+                        <input
+                          type="text"
+                          id="name"
+                          v-model="userForm.name"
+                          class="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition duration-200"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label
+                        for="patronymic"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                      >
+                        Отчество
+                      </label>
+                      <input
+                        type="text"
+                        id="patronymic"
+                        v-model="userForm.patronymic"
+                        class="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition duration-200"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        for="phone"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                      >
+                        Телефон
+                      </label>
+                      <input
+                        type="tel"
+                        id="phone"
+                        v-model="userForm.phone"
+                        class="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition duration-200"
+                      />
                     </div>
                     <div>
                       <label
@@ -673,7 +707,9 @@ const userForm = ref({
   id: null,
   name: '',
   surname: '',
+  patronymic: '',
   email: '',
+  phone: '',
   password: '',
   role: 'user',
   status: 'active',
@@ -697,12 +733,21 @@ const statusLabels = {
 
 // Заголовки таблицы
 const tableHeaders = [
-  { key: 'name', label: 'Пользователь' },
-  { key: 'status', label: 'Статус' },
+  { key: 'fullName', label: 'ФИО' },
+  { key: 'email', label: 'Email' },
+  { key: 'phone', label: 'Телефон' },
   { key: 'role', label: 'Роль' },
-  { key: 'createdAt', label: 'Дата регистрации' },
-  { key: 'lastLogin', label: 'Последний вход' },
+  { key: 'status', label: 'Статус' },
 ];
+
+// Добавляем вычисляемое свойство для полного имени
+const getFullName = (user) => {
+  const parts = [user.surname, user.name];
+  if (user.patronymic) {
+    parts.push(user.patronymic);
+  }
+  return parts.filter(Boolean).join(' ');
+};
 
 // Фильтрация пользователей
 const filteredUsers = computed(() => {
@@ -800,73 +845,32 @@ const displayedPages = computed(() => {
 // Методы
 const fetchUsers = async () => {
   try {
-    // В реальном приложении здесь будет запрос к API
-    // const response = await fetch('http://localhost:5000/api/users', {
-    //   headers: {
-    //     'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-    //   }
-    // });
-    // const data = await response.json();
-    // users.value = data;
+    const response = await fetch('https://star-way-service.onrender.com/user', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+      },
+    });
 
-    // Временные данные для демонстрации
-    users.value = [
-      {
-        id: 1,
-        name: 'Иван',
-        surname: 'Иванов',
-        email: 'ivan@example.com',
-        role: 'admin',
-        status: 'active',
-        avatar: '',
-        createdAt: '2023-01-15T10:30:00',
-        lastLogin: '2023-06-20T14:45:00',
-      },
-      {
-        id: 2,
-        name: 'Мария',
-        surname: 'Петрова',
-        email: 'maria@example.com',
-        role: 'manager',
-        status: 'active',
-        avatar: '',
-        createdAt: '2023-02-10T09:15:00',
-        lastLogin: '2023-06-19T11:20:00',
-      },
-      {
-        id: 3,
-        name: 'Алексей',
-        surname: 'Сидоров',
-        email: 'alex@example.com',
-        role: 'user',
-        status: 'inactive',
-        avatar: '',
-        createdAt: '2023-03-05T16:45:00',
-        lastLogin: '2023-05-30T09:10:00',
-      },
-      {
-        id: 4,
-        name: 'Елена',
-        surname: 'Козлова',
-        email: 'elena@example.com',
-        role: 'user',
-        status: 'pending',
-        avatar: '',
-        createdAt: '2023-06-01T12:20:00',
-        lastLogin: null,
-      },
-      {
-        id: 5,
-        name: 'Дмитрий',
-        surname: 'Смирнов',
-        email: 'dmitry@example.com',
-        role: 'manager',
-        status: 'active',
-        avatar: '',
-        createdAt: '2023-04-18T08:30:00',
-        lastLogin: '2023-06-18T16:30:00',
-      },
-    ];
+    if (!response.ok) {
+      throw new Error('Ошибка при загрузке пользователей');
+    }
+
+    const data = await response.json();
+
+    // Преобразуем данные в нужный формат
+    users.value = data.map((user) => ({
+      id: user.id,
+      name: user.name || '',
+      surname: user.surname || '',
+      patronymic: user.patronymic || '',
+      email: user.email || '',
+      phone: user.phone || '',
+      role: 'user', // значение по умолчанию
+      status: 'active', // значение по умолчанию
+      avatar: '',
+      createdAt: new Date().toISOString(), // текущая дата как значение по умолчанию
+      lastLogin: null,
+    }));
   } catch (error) {
     console.error('Ошибка при загрузке пользователей:', error);
   }
@@ -919,7 +923,9 @@ const openAddUserModal = () => {
     id: null,
     name: '',
     surname: '',
+    patronymic: '',
     email: '',
+    phone: '',
     password: '',
     role: 'user',
     status: 'active',
@@ -942,39 +948,64 @@ const closeUserModal = () => {
 
 const saveUser = async () => {
   try {
-    // В реальном приложении здесь будет запрос к API
-    // const url = isEditing.value
-    //   ? `http://localhost:5000/api/users/${userForm.value.id}`
-    //   : 'http://localhost:5000/api/users';
-    // const method = isEditing.value ? 'PUT' : 'POST';
-    //
-    // const response = await fetch(url, {
-    //   method,
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-    //   },
-    //   body: JSON.stringify(userForm.value)
-    // });
-    //
-    // if (!response.ok) {
-    //   throw new Error('Ошибка при сохранении пользователя');
-    // }
+    const url = isEditing.value
+      ? `https://star-way-service.onrender.com/user/${userForm.value.id}`
+      : 'https://star-way-service.onrender.com/user';
 
-    // Временная логика для демонстрации
+    const method = isEditing.value ? 'PATCH' : 'POST';
+
+    // Подготавливаем данные для отправки
+    const userData = {
+      name: userForm.value.name,
+      surname: userForm.value.surname,
+      patronymic: userForm.value.patronymic,
+      email: userForm.value.email,
+      phone: userForm.value.phone,
+    };
+
+    // Добавляем пароль только если он был изменен
+    if (userForm.value.password) {
+      userData.password = userForm.value.password;
+    }
+
+    const response = await fetch(url, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+      },
+      body: JSON.stringify(userData),
+    });
+
+    if (!response.ok) {
+      throw new Error('Ошибка при сохранении пользователя');
+    }
+
+    const updatedUser = await response.json();
+
     if (isEditing.value) {
-      const index = users.value.findIndex((u) => u.id === userForm.value.id);
+      // Обновляем существующего пользователя
+      const index = users.value.findIndex((u) => u.id === updatedUser.id);
       if (index !== -1) {
-        users.value[index] = { ...userForm.value };
+        users.value[index] = {
+          ...updatedUser,
+          role: userForm.value.role,
+          status: userForm.value.status,
+          avatar: userForm.value.avatar,
+          createdAt: userForm.value.createdAt,
+          lastLogin: userForm.value.lastLogin,
+        };
       }
     } else {
-      const newUser = {
-        ...userForm.value,
-        id: users.value.length + 1,
+      // Добавляем нового пользователя
+      users.value.push({
+        ...updatedUser,
+        role: 'user',
+        status: 'active',
+        avatar: '',
         createdAt: new Date().toISOString(),
         lastLogin: null,
-      };
-      users.value.push(newUser);
+      });
     }
 
     closeUserModal();
@@ -995,19 +1026,20 @@ const closeDeleteModal = () => {
 
 const deleteUser = async () => {
   try {
-    // В реальном приложении здесь будет запрос к API
-    // const response = await fetch(`http://localhost:5000/api/users/${userToDelete.value.id}`, {
-    //   method: 'DELETE',
-    //   headers: {
-    //     'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-    //   }
-    // });
-    //
-    // if (!response.ok) {
-    //   throw new Error('Ошибка при удалении пользователя');
-    // }
+    const url = `https://star-way-service.onrender.com/user/${userToDelete.value.id}`;
 
-    // Временная логика для демонстрации
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Ошибка при удалении пользователя');
+    }
+
+    // Удаляем пользователя из списка после успешного удаления на сервере
     users.value = users.value.filter((u) => u.id !== userToDelete.value.id);
 
     closeDeleteModal();
