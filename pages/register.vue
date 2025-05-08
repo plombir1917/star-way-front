@@ -2,6 +2,9 @@
   <div
     class="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 p-4"
   >
+    <!-- Toaster -->
+    <Toaster ref="toaster" />
+
     <!-- Кнопка "На главную" -->
     <NuxtLink
       to="/"
@@ -244,12 +247,22 @@
                 </svg>
               </div>
             </div>
+            <p
+              v-if="
+                formData.password &&
+                formData.password_confirmation &&
+                !passwordsMatch
+              "
+              class="mt-2 text-sm text-red-600"
+            >
+              Пароли не совпадают
+            </p>
           </div>
 
           <!-- Register Button -->
           <button
             type="submit"
-            :disabled="isLoading"
+            :disabled="isLoading || !passwordsMatch"
             class="w-full py-2 px-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
           >
             <span v-if="isLoading" class="flex items-center justify-center">
@@ -303,25 +316,38 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { navigateTo } from '#app';
 
+const toaster = ref(null);
 const formData = ref({
   name: '',
   surname: '',
   email: '',
   password: '',
-  password_confirmation: '',
 });
 
 const errorMessage = ref('');
 const isLoading = ref(false);
 
+// Проверка совпадения паролей
+const passwordsMatch = computed(
+  () => formData.value.password === formData.value.password_confirmation
+);
+
 // Обработчик регистрации
 async function handleRegister() {
+  if (!passwordsMatch.value) {
+    errorMessage.value = 'Пароли не совпадают';
+    return;
+  }
   try {
     isLoading.value = true;
     errorMessage.value = '';
+
+    // Создаём копию данных без password_confirmation
+    const payload = { ...formData.value };
+    delete payload.password_confirmation;
 
     const response = await fetch('http://37.233.81.42/star-way/register', {
       method: 'POST',
@@ -329,7 +355,7 @@ async function handleRegister() {
         'Content-Type': 'application/json',
         Accept: 'application/json',
       },
-      body: JSON.stringify(formData.value),
+      body: JSON.stringify(payload),
     });
 
     const data = await response.json();
@@ -339,9 +365,11 @@ async function handleRegister() {
     }
 
     // Успешная регистрация
+    toaster.value.addToast('Регистрация успешно завершена', 'success');
     navigateTo('/login');
   } catch (error) {
     errorMessage.value = error.message;
+    toaster.value.addToast(error.message, 'error');
   } finally {
     isLoading.value = false;
   }

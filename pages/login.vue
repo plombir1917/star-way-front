@@ -2,6 +2,9 @@
   <div
     class="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 p-4"
   >
+    <!-- Toaster -->
+    <Toaster ref="toaster" />
+
     <!-- Кнопка "На главную" -->
     <NuxtLink
       to="/"
@@ -213,6 +216,7 @@
 import { ref } from 'vue';
 import { navigateTo } from '#app';
 
+const toaster = ref(null);
 const formData = ref({
   email: '',
   password: '',
@@ -247,14 +251,14 @@ async function handleLogin() {
     if (data.access_token) {
       localStorage.setItem('access_token', data.access_token);
       console.log('Токен успешно сохранен');
+      toaster.value.addToast('Успешный вход в систему', 'success');
+      navigateTo('/admin');
     } else {
       throw new Error('Токен не получен от сервера');
     }
-
-    // Успешный вход
-    navigateTo('/admin');
   } catch (error) {
     errorMessage.value = error.message;
+    toaster.value.addToast(error.message, 'error');
   } finally {
     isLoading.value = false;
   }

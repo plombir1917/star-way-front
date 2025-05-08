@@ -1,5 +1,8 @@
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Toaster -->
+    <Toaster ref="toaster" />
+
     <!-- Заголовок -->
     <div class="mb-8">
       <h1 class="text-3xl font-bold text-gray-800 dark:text-white">
@@ -180,6 +183,11 @@
                 :key="user.id"
                 class="hover:bg-gray-50 dark:hover:bg-gray-700 transition duration-150"
               >
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-900 dark:text-white">
+                    {{ user.id }}
+                  </div>
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
                     <div class="flex-shrink-0 h-10 w-10">
@@ -688,7 +696,7 @@ definePageMeta({
   layout: 'admin',
 });
 
-// Состояние
+const toaster = ref(null);
 const users = ref([]);
 const searchQuery = ref('');
 const roleFilter = ref('');
@@ -733,6 +741,7 @@ const statusLabels = {
 
 // Заголовки таблицы
 const tableHeaders = [
+  { key: 'id', label: 'ID' },
   { key: 'fullName', label: 'ФИО' },
   { key: 'email', label: 'Email' },
   { key: 'phone', label: 'Телефон' },
@@ -845,7 +854,7 @@ const displayedPages = computed(() => {
 // Методы
 const fetchUsers = async () => {
   try {
-    const response = await fetch('https://star-way-service.onrender.com/user', {
+    const response = await fetch('http://37.233.81.42/star-way/user', {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('access_token')}`,
       },
@@ -856,8 +865,6 @@ const fetchUsers = async () => {
     }
 
     const data = await response.json();
-
-    // Преобразуем данные в нужный формат
     users.value = data.map((user) => ({
       id: user.id,
       name: user.name || '',
@@ -865,14 +872,18 @@ const fetchUsers = async () => {
       patronymic: user.patronymic || '',
       email: user.email || '',
       phone: user.phone || '',
-      role: 'user', // значение по умолчанию
-      status: 'active', // значение по умолчанию
+      role: 'user',
+      status: 'active',
       avatar: '',
-      createdAt: new Date().toISOString(), // текущая дата как значение по умолчанию
+      createdAt: new Date().toISOString(),
       lastLogin: null,
     }));
   } catch (error) {
     console.error('Ошибка при загрузке пользователей:', error);
+    toaster.value.addToast(
+      'Ошибка при загрузке пользователей: ' + error.message,
+      'error'
+    );
   }
 };
 
@@ -949,12 +960,11 @@ const closeUserModal = () => {
 const saveUser = async () => {
   try {
     const url = isEditing.value
-      ? `https://star-way-service.onrender.com/user/${userForm.value.id}`
-      : 'https://star-way-service.onrender.com/user';
+      ? `http://37.233.81.42/star-way/user/${userForm.value.id}`
+      : 'http://37.233.81.42/star-way/user';
 
     const method = isEditing.value ? 'PATCH' : 'POST';
 
-    // Подготавливаем данные для отправки
     const userData = {
       name: userForm.value.name,
       surname: userForm.value.surname,
@@ -963,7 +973,6 @@ const saveUser = async () => {
       phone: userForm.value.phone,
     };
 
-    // Добавляем пароль только если он был изменен
     if (userForm.value.password) {
       userData.password = userForm.value.password;
     }
@@ -978,13 +987,15 @@ const saveUser = async () => {
     });
 
     if (!response.ok) {
-      throw new Error('Ошибка при сохранении пользователя');
+      const errorData = await response.json();
+      throw new Error(
+        errorData.message || 'Ошибка при сохранении пользователя'
+      );
     }
 
     const updatedUser = await response.json();
 
     if (isEditing.value) {
-      // Обновляем существующего пользователя
       const index = users.value.findIndex((u) => u.id === updatedUser.id);
       if (index !== -1) {
         users.value[index] = {
@@ -996,8 +1007,8 @@ const saveUser = async () => {
           lastLogin: userForm.value.lastLogin,
         };
       }
+      toaster.value.addToast('Пользователь успешно обновлен', 'success');
     } else {
-      // Добавляем нового пользователя
       users.value.push({
         ...updatedUser,
         role: 'user',
@@ -1006,11 +1017,16 @@ const saveUser = async () => {
         createdAt: new Date().toISOString(),
         lastLogin: null,
       });
+      toaster.value.addToast('Пользователь успешно создан', 'success');
     }
 
     closeUserModal();
   } catch (error) {
     console.error('Ошибка при сохранении пользователя:', error);
+    toaster.value.addToast(
+      'Ошибка при сохранении пользователя: ' + error.message,
+      'error'
+    );
   }
 };
 
@@ -1026,7 +1042,7 @@ const closeDeleteModal = () => {
 
 const deleteUser = async () => {
   try {
-    const url = `https://star-way-service.onrender.com/user/${userToDelete.value.id}`;
+    const url = `http://37.233.81.42/star-way/user/${userToDelete.value.id}`;
 
     const response = await fetch(url, {
       method: 'DELETE',
@@ -1036,15 +1052,19 @@ const deleteUser = async () => {
     });
 
     if (!response.ok) {
-      throw new Error('Ошибка при удалении пользователя');
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Ошибка при удалении пользователя');
     }
 
-    // Удаляем пользователя из списка после успешного удаления на сервере
     users.value = users.value.filter((u) => u.id !== userToDelete.value.id);
-
+    toaster.value.addToast('Пользователь успешно удален', 'success');
     closeDeleteModal();
   } catch (error) {
     console.error('Ошибка при удалении пользователя:', error);
+    toaster.value.addToast(
+      'Ошибка при удалении пользователя: ' + error.message,
+      'error'
+    );
   }
 };
 

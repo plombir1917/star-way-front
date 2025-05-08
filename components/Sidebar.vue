@@ -4,6 +4,7 @@
       'h-screen flex-shrink-0 transition-all duration-300 dark:bg-gray-900 dark:text-gray-200 shadow-lg',
       isMobile ? 'fixed top-0 left-0 w-64 z-40' : 'relative',
       isCollapsed && !isMobile ? 'w-16' : 'w-64',
+      isMobile && !isOpen ? '-translate-x-full' : '',
     ]"
   >
     <!-- Header -->
@@ -45,7 +46,7 @@
         </button>
         <button
           v-if="isMobile"
-          @click="$emit('close')"
+          @click="closeSidebar"
           class="p-2 rounded-lg transition duration-200 hover:bg-purple-100 dark:hover:bg-purple-700"
           aria-label="Close sidebar"
         >
@@ -110,7 +111,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, h } from 'vue';
 import { useRoute } from 'vue-router';
 
 const props = defineProps({
@@ -118,9 +119,13 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  isOpen: {
+    type: Boolean,
+    default: true,
+  },
 });
 
-defineEmits(['close']);
+const emit = defineEmits(['close']);
 
 const isCollapsed = ref(false);
 const route = useRoute();
@@ -137,6 +142,11 @@ const menuItems = [
     name: 'Пользователи',
     path: '/admin/users',
     icon: 'UsersIcon',
+  },
+  {
+    name: 'Площадки',
+    path: '/admin/locations',
+    icon: 'LocationIcon',
   },
   {
     name: 'Мероприятия',
@@ -201,6 +211,29 @@ const UsersIcon = {
           'stroke-linejoin': 'round',
           'stroke-width': '2',
           d: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
+        }),
+      ]
+    );
+  },
+};
+
+const LocationIcon = {
+  render() {
+    return h(
+      'svg',
+      {
+        xmlns: 'http://www.w3.org/2000/svg',
+        class: 'h-5 w-5',
+        fill: 'none',
+        viewBox: '0 0 24 24',
+        stroke: 'currentColor',
+      },
+      [
+        h('path', {
+          'stroke-linecap': 'round',
+          'stroke-linejoin': 'round',
+          'stroke-width': '2',
+          d: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
         }),
       ]
     );
@@ -315,6 +348,13 @@ function toggleCollapse() {
   isCollapsed.value = !isCollapsed.value;
   localStorage.setItem('sidebarCollapsed', isCollapsed.value);
 }
+
+// Функция для закрытия сайдбара
+const closeSidebar = () => {
+  if (props.isMobile) {
+    emit('close');
+  }
+};
 
 // Загрузка темы при монтировании компонента
 onMounted(() => {
