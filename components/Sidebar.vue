@@ -23,28 +23,6 @@
       </div>
       <div class="flex items-center space-x-2">
         <button
-          v-if="!isMobile"
-          @click="toggleCollapse"
-          class="p-2 rounded-lg transition duration-200 hover:bg-purple-100 dark:hover:bg-purple-700"
-          aria-label="Toggle sidebar"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5 text-gray-600 dark:text-gray-300"
-            :class="{ 'rotate-180': isCollapsed }"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M11 19l-7-7 7-7m8 14l-7-7 7-7"
-            />
-          </svg>
-        </button>
-        <button
           v-if="isMobile"
           @click="closeSidebar"
           class="p-2 rounded-lg transition duration-200 hover:bg-purple-100 dark:hover:bg-purple-700"
@@ -84,17 +62,13 @@
             ]"
             @click="isMobile && $emit('close')"
           >
-            <div class="flex items-center justify-center w-8 h-8">
+            <span class="flex items-center justify-center w-8 h-8 mr-3">
               <component
                 :is="item.icon"
                 class="h-5 w-5 text-purple-600 dark:text-purple-400"
-                :class="{ 'mr-3': !isCollapsed || isMobile }"
               />
-            </div>
-            <span
-              v-if="!isCollapsed || isMobile"
-              class="ml-3 transition-opacity duration-200"
-            >
+            </span>
+            <span class="transition-opacity duration-200">
               {{ item.name }}
             </span>
             <div
@@ -130,45 +104,6 @@ const emit = defineEmits(['close']);
 const isCollapsed = ref(false);
 const route = useRoute();
 const isDarkMode = ref(false);
-
-// Меню навигации
-const menuItems = [
-  {
-    name: 'Главная',
-    path: '/admin',
-    icon: 'HomeIcon',
-  },
-  {
-    name: 'Пользователи',
-    path: '/admin/users',
-    icon: 'UsersIcon',
-  },
-  {
-    name: 'Площадки',
-    path: '/admin/locations',
-    icon: 'LocationIcon',
-  },
-  {
-    name: 'Мероприятия',
-    path: '/admin/events',
-    icon: 'CalendarIcon',
-  },
-  {
-    name: 'Коллективы',
-    path: '/admin/groups',
-    icon: 'UserGroupIcon',
-  },
-  {
-    name: 'Профиль',
-    path: '/admin/profile',
-    icon: 'UserIcon',
-  },
-  {
-    name: 'Настройки',
-    path: '/admin/settings',
-    icon: 'CogIcon',
-  },
-];
 
 // Компоненты иконок
 const HomeIcon = {
@@ -337,6 +272,17 @@ const CogIcon = {
     );
   },
 };
+
+// Меню навигации
+const menuItems = [
+  { name: 'Главная', path: '/admin', icon: HomeIcon },
+  { name: 'Пользователи', path: '/admin/users', icon: UsersIcon },
+  { name: 'Площадки', path: '/admin/locations', icon: LocationIcon },
+  { name: 'Мероприятия', path: '/admin/events', icon: CalendarIcon },
+  { name: 'Коллективы', path: '/admin/groups', icon: UserGroupIcon },
+  { name: 'Профиль', path: '/admin/profile', icon: UserIcon },
+  { name: 'Настройки', path: '/admin/settings', icon: CogIcon },
+];
 
 // Функция для проверки активного маршрута
 function isActive(path) {

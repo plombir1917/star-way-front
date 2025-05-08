@@ -4,13 +4,9 @@
     <div
       v-if="!isMobile || isSidebarOpen"
       class="fixed top-0 left-0 h-screen z-30 transition-all duration-300"
-      :class="{
-        'w-16': isSidebarCollapsed && !isMobile,
-        'w-64': !isSidebarCollapsed || isMobile,
-      }"
+      :style="{ width: sidebarWidth }"
     >
       <AdminSidebar
-        :is-collapsed="isSidebarCollapsed"
         :is-mobile="isMobile"
         :is-open="isSidebarOpen"
         @close="closeSidebar"
@@ -20,28 +16,15 @@
     <!-- Фиксированный хедер -->
     <div
       class="fixed top-0 right-0 z-20 transition-all duration-300"
-      :class="{
-        'left-16': isSidebarCollapsed && !isMobile,
-        'left-64': !isSidebarCollapsed && !isMobile,
-        'left-0': isMobile,
-      }"
+      :style="{ left: headerLeft }"
     >
-      <Header
-        :is-sidebar-collapsed="isSidebarCollapsed"
-        :is-mobile="isMobile"
-        @toggle-sidebar="toggleSidebar"
-      />
+      <Header :is-mobile="isMobile" @toggle-sidebar="toggleSidebar" />
     </div>
 
     <!-- Основной контент -->
     <main
       class="transition-all duration-300 min-h-screen"
-      :class="{
-        'ml-16': isSidebarCollapsed && !isMobile,
-        'ml-64': !isSidebarCollapsed && !isMobile,
-        'ml-0': isMobile,
-        'pt-16': true,
-      }"
+      :style="{ marginLeft: mainMarginLeft, paddingTop: '4rem' }"
     >
       <slot />
     </main>
@@ -56,19 +39,34 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import AdminSidebar from '~/components/Sidebar.vue';
 import Header from '~/components/Header.vue';
 
-const isSidebarCollapsed = ref(false);
 const isMobile = ref(false);
 const isSidebarOpen = ref(false);
+
+const SIDEBAR_WIDTH = 256; // 64 (w-64)
+
+const sidebarWidth = computed(() => {
+  if (isMobile.value) return isSidebarOpen.value ? `${SIDEBAR_WIDTH}px` : '0px';
+  return `${SIDEBAR_WIDTH}px`;
+});
+
+const headerLeft = computed(() => {
+  if (isMobile.value) return '0px';
+  return `${SIDEBAR_WIDTH}px`;
+});
+
+const mainMarginLeft = computed(() => {
+  if (isMobile.value) return '0px';
+  return `${SIDEBAR_WIDTH}px`;
+});
 
 // Функция для проверки мобильного устройства
 const checkMobile = () => {
   isMobile.value = window.innerWidth < 768;
   if (isMobile.value) {
-    isSidebarCollapsed.value = true;
     isSidebarOpen.value = false;
   } else {
     isSidebarOpen.value = true;
@@ -79,9 +77,6 @@ const checkMobile = () => {
 const toggleSidebar = () => {
   if (isMobile.value) {
     isSidebarOpen.value = !isSidebarOpen.value;
-  } else {
-    isSidebarCollapsed.value = !isSidebarCollapsed.value;
-    localStorage.setItem('sidebarCollapsed', isSidebarCollapsed.value);
   }
 };
 
@@ -92,15 +87,9 @@ const closeSidebar = () => {
   }
 };
 
-// Загрузка состояния сайдбара и проверка мобильного устройства
 onMounted(() => {
   checkMobile();
   window.addEventListener('resize', checkMobile);
-
-  const savedSidebarState = localStorage.getItem('sidebarCollapsed');
-  if (savedSidebarState !== null) {
-    isSidebarCollapsed.value = savedSidebarState === 'true';
-  }
 });
 
 onUnmounted(() => {
