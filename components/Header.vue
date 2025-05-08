@@ -1,18 +1,49 @@
 <template>
   <header
     class="bg-white shadow-sm dark:bg-gray-800 fixed top-0 right-0 left-0 z-20 transition-all duration-300"
-    :class="{ 'ml-16': isSidebarCollapsed, 'ml-64': !isSidebarCollapsed }"
+    :class="{
+      'ml-16': isSidebarCollapsed && !isMobile,
+      'ml-64': !isSidebarCollapsed && !isMobile,
+    }"
   >
     <div
-      class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center"
+      class="max-w-7xl mx-auto py-2 px-4 sm:px-6 lg:px-8 flex justify-between items-center"
     >
-      <!-- Левая часть: Заголовок и поиск -->
-      <div class="flex items-center space-x-4 flex-1">
-        <h1 class="text-2xl font-semibold text-gray-800 dark:text-gray-200">
+      <!-- Левая часть: Бургер и заголовок -->
+      <div class="flex items-center space-x-4">
+        <!-- Бургер-меню для мобильных -->
+        <button
+          v-if="isMobile"
+          @click="$emit('toggleSidebar')"
+          class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-200"
+          aria-label="Toggle menu"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6 text-gray-600 dark:text-gray-300"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+          </svg>
+        </button>
+
+        <h1
+          class="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-gray-200"
+        >
           {{ pageTitle }}
         </h1>
+      </div>
 
-        <!-- Поиск -->
+      <!-- Правая часть: Поиск, уведомления, тема и профиль -->
+      <div class="flex items-center space-x-2 sm:space-x-4">
+        <!-- Поиск (скрыт на мобильных) -->
         <div class="relative hidden md:block flex-1 max-w-md">
           <div class="relative">
             <input
@@ -42,10 +73,7 @@
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Правая часть: Управление темой, уведомления и профиль -->
-      <div class="flex items-center space-x-4">
         <!-- Уведомления -->
         <div class="relative">
           <button
@@ -76,65 +104,74 @@
           </button>
 
           <!-- Выпадающее меню уведомлений -->
-          <div
-            v-if="showNotifications"
-            class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 z-50"
+          <transition
+            enter-active-class="transition duration-200 ease-out"
+            enter-from-class="transform scale-95 opacity-0"
+            enter-to-class="transform scale-100 opacity-100"
+            leave-active-class="transition duration-150 ease-in"
+            leave-from-class="transform scale-100 opacity-100"
+            leave-to-class="transform scale-95 opacity-0"
           >
-            <div class="p-4">
-              <h3
-                class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4"
-              >
-                Уведомления
-              </h3>
-              <div class="space-y-4 max-h-96 overflow-y-auto">
-                <div
-                  v-if="notifications.length === 0"
-                  class="text-center text-gray-500 dark:text-gray-400 py-4"
+            <div
+              v-if="showNotifications"
+              class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 z-50 notifications-menu"
+            >
+              <div class="p-4">
+                <h3
+                  class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4"
                 >
-                  Нет новых уведомлений
-                </div>
-                <div
-                  v-for="(notification, index) in notifications"
-                  :key="index"
-                  class="flex items-start p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition duration-200"
-                >
-                  <div class="flex-shrink-0">
-                    <div
-                      class="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center"
-                    >
-                      <component
-                        :is="notification.icon"
-                        class="h-4 w-4 text-purple-600 dark:text-purple-400"
-                      />
+                  Уведомления
+                </h3>
+                <div class="space-y-4 max-h-96 overflow-y-auto">
+                  <div
+                    v-if="notifications.length === 0"
+                    class="text-center text-gray-500 dark:text-gray-400 py-4"
+                  >
+                    Нет новых уведомлений
+                  </div>
+                  <div
+                    v-for="(notification, index) in notifications"
+                    :key="index"
+                    class="flex items-start p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition duration-200"
+                  >
+                    <div class="flex-shrink-0">
+                      <div
+                        class="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center"
+                      >
+                        <component
+                          :is="notification.icon"
+                          class="h-4 w-4 text-purple-600 dark:text-purple-400"
+                        />
+                      </div>
+                    </div>
+                    <div class="ml-3 flex-1">
+                      <p
+                        class="text-sm font-medium text-gray-800 dark:text-gray-200"
+                      >
+                        {{ notification.title }}
+                      </p>
+                      <p class="text-sm text-gray-500 dark:text-gray-400">
+                        {{ notification.message }}
+                      </p>
+                      <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                        {{ notification.time }}
+                      </p>
                     </div>
                   </div>
-                  <div class="ml-3 flex-1">
-                    <p
-                      class="text-sm font-medium text-gray-800 dark:text-gray-200"
-                    >
-                      {{ notification.title }}
-                    </p>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">
-                      {{ notification.message }}
-                    </p>
-                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                      {{ notification.time }}
-                    </p>
-                  </div>
+                </div>
+                <div
+                  class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700"
+                >
+                  <button
+                    @click="markAllAsRead"
+                    class="w-full text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300"
+                  >
+                    Отметить все как прочитанные
+                  </button>
                 </div>
               </div>
-              <div
-                class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700"
-              >
-                <button
-                  @click="markAllAsRead"
-                  class="w-full text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300"
-                >
-                  Отметить все как прочитанные
-                </button>
-              </div>
             </div>
-          </div>
+          </transition>
         </div>
 
         <!-- Переключатель темы -->
@@ -182,7 +219,7 @@
           >
             <div
               v-if="isProfileMenuOpen"
-              class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 z-50"
+              class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 z-50 profile-menu"
             >
               <div class="py-1">
                 <div
@@ -229,12 +266,15 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import ThemeToggle from './ThemeToggle.vue';
 
+defineEmits(['toggleSidebar']);
+
 const route = useRoute();
 const router = useRouter();
 const isProfileMenuOpen = ref(false);
 const showNotifications = ref(false);
 const searchQuery = ref('');
 const isSidebarCollapsed = ref(false);
+const isMobile = ref(false);
 
 // Данные пользователя
 const userName = ref('Имя Фамилия');
@@ -278,7 +318,6 @@ const pageTitle = computed(() => {
 
 // Обработчики
 const handleSearch = () => {
-  // Реализация поиска
   console.log('Поиск:', searchQuery.value);
 };
 
@@ -293,28 +332,50 @@ const markAllAsRead = () => {
 };
 
 const handleLogout = () => {
-  // Удаляем токен из localStorage
   localStorage.removeItem('auth_token');
-  // Перенаправляем на страницу входа
   router.push('/login');
 };
 
 // Закрытие выпадающих меню при клике вне их
 const handleClickOutside = (event) => {
+  const profileButton = document.querySelector('[aria-label="Меню профиля"]');
   const profileMenu = document.querySelector('.profile-menu');
+  const notificationsButton = document.querySelector(
+    '[aria-label="Уведомления"]'
+  );
   const notificationsMenu = document.querySelector('.notifications-menu');
 
-  if (profileMenu && !profileMenu.contains(event.target)) {
+  // Закрываем меню профиля
+  if (
+    profileButton &&
+    !profileButton.contains(event.target) &&
+    profileMenu &&
+    !profileMenu.contains(event.target)
+  ) {
     isProfileMenuOpen.value = false;
   }
 
-  if (notificationsMenu && !notificationsMenu.contains(event.target)) {
+  // Закрываем меню уведомлений
+  if (
+    notificationsButton &&
+    !notificationsButton.contains(event.target) &&
+    notificationsMenu &&
+    !notificationsMenu.contains(event.target)
+  ) {
     showNotifications.value = false;
   }
 };
 
+// Проверка мобильного устройства
+const checkMobile = () => {
+  isMobile.value = window.innerWidth < 768;
+};
+
 // Загрузка состояния сайдбара
 onMounted(() => {
+  checkMobile();
+  window.addEventListener('resize', checkMobile);
+
   const savedSidebarState = localStorage.getItem('sidebarCollapsed');
   if (savedSidebarState !== null) {
     isSidebarCollapsed.value = savedSidebarState === 'true';
@@ -333,6 +394,7 @@ watch(
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
+  window.removeEventListener('resize', checkMobile);
 });
 </script>
 
@@ -353,5 +415,19 @@ onUnmounted(() => {
 .overflow-y-auto::-webkit-scrollbar-thumb {
   background-color: rgba(156, 163, 175, 0.5);
   border-radius: 3px;
+}
+
+/* Анимации для выпадающих меню */
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Стили для мобильной версии */
+@media (max-width: 767px) {
+  header {
+    padding: 0.5rem 1rem;
+  }
 }
 </style>

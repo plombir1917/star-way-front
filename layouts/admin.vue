@@ -1,53 +1,120 @@
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-    <div class="fixed inset-y-0 left-0 z-30">
-      <AdminSidebar />
-    </div>
-    <div class="fixed top-0 right-0 left-0 z-20">
-      <Header />
-    </div>
-    <main
-      class="transition-all duration-300"
+    <!-- Фиксированный сайдбар -->
+    <div
+      class="fixed top-0 left-0 h-screen z-30 transition-all duration-300"
       :class="{
-        'ml-64': !isSidebarCollapsed,
-        'ml-16': isSidebarCollapsed,
+        'w-16': isSidebarCollapsed && !isMobile,
+        'w-64': !isSidebarCollapsed || isMobile,
       }"
     >
-      <div class="p-2 pt-12">
-        <slot />
-      </div>
+      <AdminSidebar
+        :is-collapsed="isSidebarCollapsed"
+        :is-mobile="isMobile"
+        @close="closeSidebar"
+      />
+    </div>
+
+    <!-- Фиксированный хедер -->
+    <div
+      class="fixed top-0 right-0 z-20 transition-all duration-300"
+      :class="{
+        'left-16': isSidebarCollapsed && !isMobile,
+        'left-64': !isSidebarCollapsed && !isMobile,
+        'left-0': isMobile,
+      }"
+    >
+      <Header
+        :is-sidebar-collapsed="isSidebarCollapsed"
+        :is-mobile="isMobile"
+        @toggle-sidebar="toggleSidebar"
+      />
+    </div>
+
+    <!-- Основной контент -->
+    <main
+      class="transition-all duration-300 min-h-screen"
+      :class="{
+        'ml-16': isSidebarCollapsed && !isMobile,
+        'ml-64': !isSidebarCollapsed && !isMobile,
+        'ml-0': isMobile,
+        'pt-16': true,
+      }"
+    >
+      <slot />
     </main>
+
+    <!-- Мобильный оверлей -->
+    <div
+      v-if="isMobile && !isSidebarCollapsed"
+      class="fixed inset-0 bg-black bg-opacity-50 z-20"
+      @click="closeSidebar"
+    ></div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import AdminSidebar from '~/components/Sidebar.vue';
 import Header from '~/components/Header.vue';
 
 const isSidebarCollapsed = ref(false);
+const isMobile = ref(false);
 
+// Функция для проверки мобильного устройства
+const checkMobile = () => {
+  isMobile.value = window.innerWidth < 768;
+  if (isMobile.value) {
+    isSidebarCollapsed.value = true;
+  }
+};
+
+// Функция для переключения сайдбара
+const toggleSidebar = () => {
+  isSidebarCollapsed.value = !isSidebarCollapsed.value;
+  localStorage.setItem('sidebarCollapsed', isSidebarCollapsed.value);
+};
+
+// Функция для закрытия сайдбара
+const closeSidebar = () => {
+  if (isMobile.value) {
+    isSidebarCollapsed.value = true;
+  }
+};
+
+// Загрузка состояния сайдбара и проверка мобильного устройства
 onMounted(() => {
+  checkMobile();
+  window.addEventListener('resize', checkMobile);
+
   const savedSidebarState = localStorage.getItem('sidebarCollapsed');
   if (savedSidebarState !== null) {
     isSidebarCollapsed.value = savedSidebarState === 'true';
   }
 });
 
-watch(
-  () => localStorage.getItem('sidebarCollapsed'),
-  (newValue) => {
-    isSidebarCollapsed.value = newValue === 'true';
-  }
-);
+onUnmounted(() => {
+  window.removeEventListener('resize', checkMobile);
+});
 </script>
 
 <style scoped>
-/* Добавляем стили для корректного отображения */
-main {
-  margin-top: 2.5rem; /* Минимальный отступ для хедера */
-  min-height: calc(100vh - 2.5rem);
+/* Анимации для сайдбара и хедера */
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
 }
 
-/* Отступы для сайдбара будут управляться через JavaScript в компонентах */
+/* Стили для мобильной версии */
+@media (max-width: 767px) {
+  .sidebar {
+    transform: translateX(0);
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .sidebar.hidden {
+    transform: translateX(-100%);
+  }
+}
 </style>
