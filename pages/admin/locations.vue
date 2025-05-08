@@ -56,6 +56,11 @@
                 <th
                   class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                 >
+                  ID
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                >
                   Название
                 </th>
                 <th
@@ -110,6 +115,11 @@
                 :key="location.id"
                 class="hover:bg-gray-50 dark:hover:bg-gray-700 transition duration-150"
               >
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-base text-gray-900 dark:text-gray-200 font-medium"
+                >
+                  {{ location.id }}
+                </td>
                 <td
                   class="px-6 py-4 whitespace-nowrap text-base text-gray-900 dark:text-gray-200 font-medium"
                 >

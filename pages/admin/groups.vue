@@ -10,7 +10,14 @@
         Управление коллективами системы
       </p>
     </div>
-    <div class="flex justify-end mb-6">
+    <!-- Поиск и кнопка в одной строке -->
+    <div class="flex items-center justify-between gap-4 mb-6 flex-wrap">
+      <input
+        v-model="searchQuery"
+        type="text"
+        placeholder="Поиск по названию..."
+        class="flex-1 min-w-[180px] max-w-sm px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition duration-200"
+      />
       <button
         @click="openCreateModal"
         class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition duration-200"
@@ -34,7 +41,7 @@
     <!-- Карточки коллективов -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <div
-        v-for="group in groups"
+        v-for="group in filteredGroups"
         :key="group.id"
         class="group bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700"
       >
@@ -159,7 +166,7 @@
       </div>
 
       <div
-        v-if="groups.length === 0"
+        v-if="filteredGroups.length === 0"
         class="col-span-full text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-dashed border-gray-200 dark:border-gray-700"
       >
         <svg
@@ -310,6 +317,7 @@ const formData = ref({
   homeland: '',
   user_id: '',
 });
+const searchQuery = ref('');
 
 const fetchGroups = async () => {
   try {
@@ -368,7 +376,7 @@ const saveGroup = async () => {
     const url = isEditing.value
       ? `http://37.233.81.42/star-way/group/${formData.value.id}`
       : 'http://37.233.81.42/star-way/group';
-    const method = isEditing.value ? 'PUT' : 'POST';
+    const method = isEditing.value ? 'PATCH' : 'POST';
     const payload = { ...formData.value };
     if (!isEditing.value) delete payload.id;
     const response = await fetch(url, {
@@ -415,6 +423,12 @@ const deleteGroup = async (id) => {
     );
   }
 };
+
+const filteredGroups = computed(() => {
+  return groups.value.filter((group) =>
+    group.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+  );
+});
 
 onMounted(() => {
   fetchGroups();
