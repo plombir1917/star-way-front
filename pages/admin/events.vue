@@ -378,7 +378,7 @@ const formatEventDate = (dateString) => {
 // Загрузка мероприятий
 const fetchEvents = async () => {
   try {
-    const response = await fetch('http://37.233.81.42/star-way/event', {
+    const response = await fetch('https://igor-plaxin.ru/star-way/event', {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('access_token')}`,
       },
@@ -438,8 +438,8 @@ const closeModal = () => {
 const saveEvent = async () => {
   try {
     const url = isEditing.value
-      ? `http://37.233.81.42/star-way/event/${formData.value.id}`
-      : 'http://37.233.81.42/star-way/event';
+      ? `https://igor-plaxin.ru/star-way/event/${formData.value.id}`
+      : 'https://igor-plaxin.ru/star-way/event';
     const method = isEditing.value ? 'PATCH' : 'POST';
     const payload = { ...formData.value };
     if (!isEditing.value) delete payload.id;
@@ -482,12 +482,15 @@ const saveEvent = async () => {
 const deleteEvent = async (id) => {
   if (!confirm('Вы уверены, что хотите удалить это мероприятие?')) return;
   try {
-    const response = await fetch(`http://37.233.81.42/star-way/event/${id}`, {
-      method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-      },
-    });
+    const response = await fetch(
+      `https://igor-plaxin.ru/star-way/event/${id}`,
+      {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      }
+    );
     if (!response.ok) throw new Error('Ошибка при удалении мероприятия');
     await fetchEvents();
     toaster.value?.addToast('Мероприятие успешно удалено', 'success');

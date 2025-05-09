@@ -388,7 +388,7 @@ async function handleRegister() {
     const payload = { ...formData.value };
     delete payload.password_confirmation;
 
-    const response = await fetch('http://37.233.81.42/star-way/register', {
+    const response = await fetch('https://igor-plaxin.ru/star-way/register', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

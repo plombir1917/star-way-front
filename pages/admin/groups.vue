@@ -321,7 +321,7 @@ const searchQuery = ref('');
 
 const fetchGroups = async () => {
   try {
-    const response = await fetch('http://37.233.81.42/star-way/group', {
+    const response = await fetch('https://igor-plaxin.ru/star-way/group', {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('access_token')}`,
       },
@@ -374,8 +374,8 @@ const closeModal = () => {
 const saveGroup = async () => {
   try {
     const url = isEditing.value
-      ? `http://37.233.81.42/star-way/group/${formData.value.id}`
-      : 'http://37.233.81.42/star-way/group';
+      ? `https://igor-plaxin.ru/star-way/group/${formData.value.id}`
+      : 'https://igor-plaxin.ru/star-way/group';
     const method = isEditing.value ? 'PATCH' : 'POST';
     const payload = { ...formData.value };
     if (!isEditing.value) delete payload.id;
@@ -407,12 +407,15 @@ const saveGroup = async () => {
 const deleteGroup = async (id) => {
   if (!confirm('Вы уверены, что хотите удалить этот коллектив?')) return;
   try {
-    const response = await fetch(`http://37.233.81.42/star-way/group/${id}`, {
-      method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-      },
-    });
+    const response = await fetch(
+      `https://igor-plaxin.ru/star-way/group/${id}`,
+      {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      }
+    );
     if (!response.ok) throw new Error('Ошибка при удалении коллектива');
     await fetchGroups();
     toaster.value?.addToast('Коллектив успешно удалён', 'success');
