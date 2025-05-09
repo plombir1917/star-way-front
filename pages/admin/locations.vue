@@ -329,7 +329,7 @@ const formData = ref({
 // Загрузка площадок
 const fetchLocations = async () => {
   try {
-    const response = await fetch('http://37.233.81.42/star-way/location', {
+    const response = await fetch('https://igor-plaxin.ru/star-way/location', {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('access_token')}`,
       },
@@ -384,8 +384,8 @@ const closeModal = () => {
 const saveLocation = async () => {
   try {
     const url = isEditing.value
-      ? `http://37.233.81.42/star-way/location/${formData.value.id}`
-      : 'http://37.233.81.42/star-way/location';
+      ? `https://igor-plaxin.ru/star-way/location/${formData.value.id}`
+      : 'https://igor-plaxin.ru/star-way/location';
 
     const method = isEditing.value ? 'PATCH' : 'POST';
 
@@ -422,7 +422,7 @@ const deleteLocation = async (id) => {
 
   try {
     const response = await fetch(
-      `http://37.233.81.42/star-way/location/${id}`,
+      `https://igor-plaxin.ru/star-way/location/${id}`,
       {
         method: 'DELETE',
         headers: {
