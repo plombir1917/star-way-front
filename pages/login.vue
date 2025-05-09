@@ -231,7 +231,7 @@ async function handleLogin() {
     isLoading.value = true;
     errorMessage.value = '';
 
-    const response = await fetch('http://37.233.81.42/star-way/login', {
+    const response = await fetch('https://igor-plaxin.ru/star-way/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -245,7 +245,6 @@ async function handleLogin() {
     if (!response.ok) {
       throw new Error(data.message || `Ошибка сервера: ${response.status}`);
     }
-    console.log(data);
 
     // Сохраняем токен
     if (data.access_token) {
