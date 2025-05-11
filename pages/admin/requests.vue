@@ -154,6 +154,27 @@
                     />
                   </svg>
                 </button>
+                <!-- Кнопка удаления -->
+                <button
+                  @click="deleteRequest(request.id)"
+                  class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition duration-200"
+                  title="Удалить"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
+                </button>
               </td>
             </tr>
           </tbody>
@@ -285,7 +306,6 @@ const requests = ref([]);
 const events = ref([]);
 
 const formData = ref({
-  id: '',
   name: '',
   description: '',
   event_id: null,
@@ -363,13 +383,15 @@ const saveRequest = async () => {
       : 'https://igor-plaxin.ru/star-way/request ';
     const method = isEditing.value ? 'PATCH' : 'POST';
 
+    // Создаем копию formData без поля id
+    const { id, ...requestData } = formData.value;
     const response = await fetch(url, {
       method,
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${localStorage.getItem('access_token')}`,
       },
-      body: JSON.stringify(formData.value),
+      body: JSON.stringify(requestData), // id не отправляется
     });
 
     if (!response.ok) throw new Error('Ошибка при сохранении заявки');
@@ -383,6 +405,34 @@ const saveRequest = async () => {
   } catch (error) {
     toaster.value?.addToast(
       'Ошибка при сохранении заявки: ' + error.message,
+      'error'
+    );
+  }
+};
+
+// Удаление заявки
+const deleteRequest = async (id) => {
+  if (!confirm('Вы уверены, что хотите удалить эту заявку?')) return;
+
+  try {
+    const response = await fetch(
+      `https://igor-plaxin.ru/star-way/request/ ${id}`,
+      {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      }
+    );
+
+    if (!response.ok) throw new Error('Ошибка при удалении заявки');
+
+    // Обновляем список заявок
+    await fetchRequests();
+    toaster.value?.addToast('Заявка успешно удалена', 'success');
+  } catch (error) {
+    toaster.value?.addToast(
+      'Ошибка при удалении заявки: ' + error.message,
       'error'
     );
   }
