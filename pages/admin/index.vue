@@ -3,7 +3,7 @@
     <!-- Приветствие -->
     <div class="mb-8">
       <h1 class="text-3xl font-bold text-gray-800 dark:text-white">
-        Добро пожаловать, {{ userName }}!
+        Добро пожаловать, {{ fullName }}!
       </h1>
       <p class="mt-2 text-gray-600 dark:text-gray-400">
         Вот краткий обзор вашей административной панели
@@ -56,7 +56,6 @@
           </div>
         </div>
       </div>
-
       <div
         class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transition-transform duration-300 hover:scale-105"
       >
@@ -101,7 +100,6 @@
           </div>
         </div>
       </div>
-
       <div
         class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transition-transform duration-300 hover:scale-105"
       >
@@ -146,7 +144,6 @@
           </div>
         </div>
       </div>
-
       <div
         class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transition-transform duration-300 hover:scale-105"
       >
@@ -163,7 +160,7 @@
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 stroke-width="2"
-                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
               />
             </svg>
           </div>
@@ -290,18 +287,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import Toaster from '~/components/Toaster.vue';
 
-// Устанавливаем layout для этой страницы
+const router = useRouter();
 definePageMeta({
   layout: 'admin',
 });
 
-const router = useRouter();
-const userName = ref('Администратор');
-
-// Статистика
+const toaster = ref(null);
+const fullName = ref('');
+const loadingProfile = ref(true);
 const stats = ref({
   users: 1245,
   usersChange: 12,
@@ -312,8 +309,6 @@ const stats = ref({
   applications: 89,
   applicationsChange: -3,
 });
-
-// Данные для графика активности
 const activityData = ref([
   { label: 'Пн', value: 65 },
   { label: 'Вт', value: 45 },
@@ -323,8 +318,6 @@ const activityData = ref([
   { label: 'Сб', value: 50 },
   { label: 'Вс', value: 70 },
 ]);
-
-// Последние действия
 const recentActions = ref([
   {
     title: 'Добавлено новое мероприятие "Танцевальный фестиваль"',
@@ -355,8 +348,6 @@ const recentActions = ref([
     iconColor: 'text-yellow-600 dark:text-yellow-400',
   },
 ]);
-
-// Быстрые действия
 const quickActions = ref([
   {
     name: 'Добавить мероприятие',
@@ -388,30 +379,61 @@ const quickActions = ref([
   },
 ]);
 
+// Получение полного имени
+const getFullName = (profile) => {
+  const parts = [profile.surname, profile.name];
+  if (profile.patronymic) {
+    parts.push(profile.patronymic);
+  }
+  return parts.filter(Boolean).join(' ');
+};
+
+// Загрузка данных профиля
+const fetchProfile = async () => {
+  try {
+    const response = await fetch('https://igor-plaxin.ru/star-way/profile ', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Ошибка загрузки профиля');
+    }
+
+    const data = await response.json();
+    fullName.value = getFullName(data);
+  } catch (error) {
+    toaster.value.addToast(
+      'Ошибка загрузки профиля: ' + error.message,
+      'error'
+    );
+    fullName.value = 'Пользователь';
+  } finally {
+    loadingProfile.value = false;
+  }
+};
+
 // Обработчик быстрых действий
 const handleQuickAction = (path) => {
   router.push(path);
 };
 
-// Загрузка данных при монтировании компонента
+// Загрузка данных при монтировании
 onMounted(() => {
-  // Здесь можно добавить загрузку реальных данных с сервера
-  // fetchStats();
-  // fetchActivityData();
-  // fetchRecentActions();
+  fetchProfile();
 });
 </script>
 
 <style scoped>
-/* Добавляем стили для корректного отображения */
 main {
-  margin-top: 4rem; /* Отступ для хедера */
-  margin-left: 0; /* Начальное значение, будет изменено в зависимости от состояния сайдбара */
+  margin-top: 4rem;
+  margin-left: 0;
 }
-
 @media (min-width: 768px) {
   main {
-    margin-left: 16rem; /* Отступ для сайдбара */
+    margin-left: 16rem;
   }
 }
 </style>

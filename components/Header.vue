@@ -6,6 +6,9 @@
       'ml-64': !isSidebarCollapsed && !isMobile,
     }"
   >
+    <!-- Toaster -->
+    <Toaster ref="toaster" />
+
     <div
       class="max-w-7xl mx-auto py-2 px-4 sm:px-6 lg:px-8 flex justify-between items-center"
     >
@@ -33,14 +36,12 @@
             />
           </svg>
         </button>
-
         <h1
           class="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-gray-200"
         >
           {{ pageTitle }}
         </h1>
       </div>
-
       <!-- Правая часть: Поиск, уведомления, тема и профиль -->
       <div class="flex items-center space-x-2 sm:space-x-4">
         <!-- Поиск (скрыт на мобильных) -->
@@ -73,7 +74,6 @@
             </div>
           </div>
         </div>
-
         <!-- Уведомления -->
         <div class="relative">
           <button
@@ -102,7 +102,6 @@
               {{ unreadNotifications }}
             </span>
           </button>
-
           <!-- Выпадающее меню уведомлений -->
           <transition
             enter-active-class="transition duration-200 ease-out"
@@ -173,10 +172,8 @@
             </div>
           </transition>
         </div>
-
         <!-- Переключатель темы -->
         <ThemeToggle />
-
         <!-- Профиль пользователя -->
         <div class="relative">
           <button
@@ -185,12 +182,14 @@
             aria-label="Меню профиля"
           >
             <img
-              :src="userAvatar"
+              :src="avatarUrl"
               alt="User Avatar"
               class="w-8 h-8 rounded-full object-cover border-2 border-purple-500"
             />
-            <span class="hidden md:block text-gray-800 dark:text-gray-200">
-              {{ userName }}
+            <span
+              class="hidden md:block text-gray-800 dark:text-gray-200 truncate max-w-xs"
+            >
+              {{ fullName }}
             </span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -207,7 +206,6 @@
               />
             </svg>
           </button>
-
           <!-- Меню профиля -->
           <transition
             enter-active-class="transition duration-200 ease-out"
@@ -228,7 +226,7 @@
                   <p
                     class="text-sm font-medium text-gray-800 dark:text-gray-200"
                   >
-                    {{ userName }}
+                    {{ fullName }}
                   </p>
                   <p class="text-xs text-gray-500 dark:text-gray-400">
                     {{ userEmail }}
@@ -265,21 +263,49 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import ThemeToggle from './ThemeToggle.vue';
+import Toaster from '~/components/Toaster.vue';
 
 defineEmits(['toggleSidebar']);
-
+const toaster = ref(null);
 const route = useRoute();
 const router = useRouter();
+
+// Данные профиля
+const profileData = ref({
+  name: '',
+  surname: '',
+  patronymic: '',
+  email: '',
+  avatar: '',
+});
+const loadingProfile = ref(true);
+
+// Получение полного имени
+const fullName = computed(() => {
+  const parts = [profileData.value.surname, profileData.value.name];
+  if (profileData.value.patronymic) {
+    parts.push(profileData.value.patronymic);
+  }
+  return parts.filter(Boolean).join(' ');
+});
+
+// URL аватара
+const avatarUrl = computed(() => {
+  if (profileData.value.avatar) {
+    return profileData.value.avatar;
+  }
+  return `https://ui-avatars.com/api/?name= ${encodeURIComponent(
+    fullName.value
+  )}&background=6366f1&color=fff`;
+});
+
+// Данные пользователя
 const isProfileMenuOpen = ref(false);
 const showNotifications = ref(false);
 const searchQuery = ref('');
 const isSidebarCollapsed = ref(false);
 const isMobile = ref(false);
-
-// Данные пользователя
-const userName = ref('Имя Фамилия');
-const userEmail = ref('user@example.com');
-const userAvatar = ref('https://i.pravatar.cc/40');
+const userEmail = computed(() => profileData.value.email);
 
 // Уведомления
 const notifications = ref([
@@ -316,11 +342,40 @@ const pageTitle = computed(() => {
   return titles[route.path] || 'Панель управления';
 });
 
-// Обработчики
-const handleSearch = () => {
-  console.log('Поиск:', searchQuery.value);
+// Загрузка данных профиля
+const fetchProfile = async () => {
+  try {
+    loadingProfile.value = true;
+    const response = await fetch('https://igor-plaxin.ru/star-way/profile ', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Ошибка загрузки профиля');
+    }
+
+    const data = await response.json();
+    profileData.value = {
+      name: data.name || '',
+      surname: data.surname || '',
+      patronymic: data.patronymic || '',
+      email: data.email || '',
+      avatar: data.avatar || '',
+    };
+  } catch (error) {
+    toaster.value.addToast(
+      'Ошибка загрузки профиля: ' + error.message,
+      'error'
+    );
+  } finally {
+    loadingProfile.value = false;
+  }
 };
 
+// Обработчики
 const toggleNotifications = () => {
   showNotifications.value = !showNotifications.value;
 };
@@ -335,6 +390,32 @@ const handleLogout = () => {
   localStorage.removeItem('auth_token');
   router.push('/login');
 };
+
+// Проверка мобильного устройства
+const checkMobile = () => {
+  isMobile.value = window.innerWidth < 768;
+};
+
+// Загрузка состояния сайдбара
+onMounted(() => {
+  checkMobile();
+  window.addEventListener('resize', checkMobile);
+
+  const savedSidebarState = localStorage.getItem('sidebarCollapsed');
+  if (savedSidebarState !== null) {
+    isSidebarCollapsed.value = savedSidebarState === 'true';
+  }
+
+  document.addEventListener('click', handleClickOutside);
+
+  // Загрузка профиля
+  fetchProfile();
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside);
+  window.removeEventListener('resize', checkMobile);
+});
 
 // Закрытие выпадающих меню при клике вне их
 const handleClickOutside = (event) => {
@@ -366,36 +447,20 @@ const handleClickOutside = (event) => {
   }
 };
 
-// Проверка мобильного устройства
-const checkMobile = () => {
-  isMobile.value = window.innerWidth < 768;
-};
-
-// Загрузка состояния сайдбара
-onMounted(() => {
-  checkMobile();
-  window.addEventListener('resize', checkMobile);
-
-  const savedSidebarState = localStorage.getItem('sidebarCollapsed');
-  if (savedSidebarState !== null) {
-    isSidebarCollapsed.value = savedSidebarState === 'true';
-  }
-
-  document.addEventListener('click', handleClickOutside);
-});
-
-// Отслеживание изменений состояния сайдбара
+// Следим за изменением маршрута для обновления данных
 watch(
-  () => localStorage.getItem('sidebarCollapsed'),
-  (newValue) => {
-    isSidebarCollapsed.value = newValue === 'true';
+  () => route.path,
+  () => {
+    if (route.path === '/admin/profile') {
+      fetchProfile();
+    }
   }
 );
 
-onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside);
-  window.removeEventListener('resize', checkMobile);
-});
+// Обработчики для поиска
+const handleSearch = () => {
+  console.log('Поиск:', searchQuery.value);
+};
 </script>
 
 <style scoped>
@@ -403,28 +468,21 @@ onUnmounted(() => {
   scrollbar-width: thin;
   scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
 }
-
 .overflow-y-auto::-webkit-scrollbar {
   width: 6px;
 }
-
 .overflow-y-auto::-webkit-scrollbar-track {
   background: transparent;
 }
-
 .overflow-y-auto::-webkit-scrollbar-thumb {
   background-color: rgba(156, 163, 175, 0.5);
   border-radius: 3px;
 }
-
-/* Анимации для выпадающих меню */
 .transition-all {
   transition-property: all;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
-
-/* Стили для мобильной версии */
 @media (max-width: 767px) {
   header {
     padding: 0.5rem 1rem;
