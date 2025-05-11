@@ -304,7 +304,7 @@ const menuItems = [
   { name: 'Мероприятия', path: '/admin/events', icon: CalendarIcon },
   { name: 'Коллективы', path: '/admin/groups', icon: UserGroupIcon },
   { name: 'Заявки', path: '/admin/requests', icon: DocumentTextIcon },
-  { name: 'Профиль', path: '/admin/profile', icon: UserIcon },
+  { name: 'Участники', path: '/admin/member', icon: UserIcon },
   { name: 'Настройки', path: '/admin/settings', icon: CogIcon },
 ];
 
