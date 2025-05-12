@@ -434,7 +434,7 @@
                       <label
                         for="group"
                         class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                        >Группа</label
+                        >Коллектив</label
                       >
                       <select
                         id="group"
@@ -442,7 +442,7 @@
                         class="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition duration-200"
                         required
                       >
-                        <option value="" disabled>Выберите группу</option>
+                        <option value="" disabled>Выберите коллектив</option>
                         <option
                           v-for="group in groups"
                           :key="group.id"
@@ -612,7 +612,7 @@ const getFullName = (member) => {
 // Получение имени группы
 const getGroupName = (groupId) => {
   const group = groups.value.find((g) => g.id === groupId);
-  return group ? group.name : 'Неизвестная группа';
+  return group ? group.name : 'Неизвестная коллектив';
 };
 
 // Фильтрация участников
