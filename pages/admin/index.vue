@@ -350,29 +350,29 @@ const recentActions = ref([
 ]);
 const quickActions = ref([
   {
-    name: 'Добавить мероприятие',
-    path: '/admin/events/new',
+    name: 'Создать заявку',
+    path: '/admin/requests',
     icon: 'CalendarIcon',
     bgColor: 'bg-blue-100 dark:bg-blue-900',
     iconColor: 'text-blue-600 dark:text-blue-400',
   },
   {
-    name: 'Добавить пользователя',
-    path: '/admin/users/new',
+    name: 'Добавить участника',
+    path: '/admin/member',
     icon: 'UserIcon',
     bgColor: 'bg-green-100 dark:bg-green-900',
     iconColor: 'text-green-600 dark:text-green-400',
   },
   {
     name: 'Создать коллектив',
-    path: '/admin/groups/new',
+    path: '/admin/groups',
     icon: 'UserGroupIcon',
     bgColor: 'bg-purple-100 dark:bg-purple-900',
     iconColor: 'text-purple-600 dark:text-purple-400',
   },
   {
-    name: 'Настройки',
-    path: '/admin/settings',
+    name: 'Добавить участника в заявку',
+    path: '/admin/member-on-request',
     icon: 'CogIcon',
     bgColor: 'bg-gray-100 dark:bg-gray-900',
     iconColor: 'text-gray-600 dark:text-gray-400',
