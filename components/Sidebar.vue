@@ -45,13 +45,12 @@
         </button>
       </div>
     </div>
-
     <!-- Navigation -->
     <nav
       class="mt-4 overflow-y-auto h-[calc(100vh-4rem)] bg-white dark:bg-gray-800"
     >
       <ul class="space-y-1 px-2">
-        <li v-for="(item, index) in menuItems" :key="index">
+        <li v-for="(item, index) in filteredMenuItems" :key="index">
           <NuxtLink
             :to="item.path"
             :class="[
@@ -104,6 +103,7 @@ const emit = defineEmits(['close']);
 const isCollapsed = ref(false);
 const route = useRoute();
 const isDarkMode = ref(false);
+const userRole = ref(null); // Хранение роли пользователя
 
 // Компоненты иконок
 const HomeIcon = {
@@ -123,29 +123,6 @@ const HomeIcon = {
           'stroke-linejoin': 'round',
           'stroke-width': '2',
           d: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',
-        }),
-      ]
-    );
-  },
-};
-
-const UsersIcon = {
-  render() {
-    return h(
-      'svg',
-      {
-        xmlns: 'http://www.w3.org/2000/svg',
-        class: 'h-5 w-5',
-        fill: 'none',
-        viewBox: '0 0 24 24',
-        stroke: 'currentColor',
-      },
-      [
-        h('path', {
-          'stroke-linecap': 'round',
-          'stroke-linejoin': 'round',
-          'stroke-width': '2',
-          d: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
         }),
       ]
     );
@@ -273,16 +250,226 @@ const CogIcon = {
   },
 };
 
+const DocumentTextIcon = {
+  render() {
+    return h(
+      'svg',
+      {
+        xmlns: 'http://www.w3.org/2000/svg',
+        class: 'h-5 w-5',
+        fill: 'none',
+        viewBox: '0 0 24 24',
+        stroke: 'currentColor',
+      },
+      [
+        h('path', {
+          'stroke-linecap': 'round',
+          'stroke-linejoin': 'round',
+          'stroke-width': '2',
+          d: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+        }),
+      ]
+    );
+  },
+};
+
+const UsersIcon = {
+  render() {
+    return h(
+      'svg',
+      {
+        xmlns: 'http://www.w3.org/2000/svg',
+        class: 'h-5 w-5',
+        fill: 'none',
+        viewBox: '0 0 24 24',
+        stroke: 'currentColor',
+      },
+      [
+        h('path', {
+          'stroke-linecap': 'round',
+          'stroke-linejoin': 'round',
+          'stroke-width': '2',
+          d: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
+        }),
+      ]
+    );
+  },
+};
+
+const UserPlusIcon = {
+  render() {
+    return h(
+      'svg',
+      {
+        xmlns: 'http://www.w3.org/2000/svg',
+        class: 'h-5 w-5',
+        fill: 'none',
+        viewBox: '0 0 24 24',
+        stroke: 'currentColor',
+      },
+      [
+        h('path', {
+          'stroke-linecap': 'round',
+          'stroke-linejoin': 'round',
+          'stroke-width': '2',
+          d: 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5H7a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V9a2 2 0 00-2-2zM7 19h10M7 19h10V9M7 19V9M7 9h10M7 9V7a2 2 0 012-2h6a2 2 0 012 2v2',
+        }),
+        h('path', {
+          'stroke-linecap': 'round',
+          'stroke-linejoin': 'round',
+          'stroke-width': '2',
+          d: 'M12 5v14M5 12h14',
+        }),
+      ]
+    );
+  },
+};
+
+const BookOpenIcon = {
+  render() {
+    return h(
+      'svg',
+      {
+        xmlns: 'http://www.w3.org/2000/svg',
+        class: 'h-5 w-5',
+        fill: 'none',
+        viewBox: '0 0 24 24',
+        stroke: 'currentColor',
+      },
+      [
+        h('path', {
+          'stroke-linecap': 'round',
+          'stroke-linejoin': 'round',
+          'stroke-width': '2',
+          d: 'M12 6.253v13m0-13C13.1045 5.056 14.5 4 16 4c1.5 0 2.8955.944 3.9 2.047V20M8 6.253v13M8 19.253c1.1045 1.091 2.5 2.047 4 2.047s2.8955-.956 4-2.047V6.253c-1.1045-1.091-2.5-2.047-4-2.047S9.1045 5.162 8 6.253z',
+        }),
+      ]
+    );
+  },
+};
+
+const LockIcon = {
+  render() {
+    return h(
+      'svg',
+      {
+        xmlns: 'http://www.w3.org/2000/svg',
+        class: 'h-5 w-5',
+        fill: 'none',
+        viewBox: '0 0 24 24',
+        stroke: 'currentColor',
+      },
+      [
+        h('path', {
+          'stroke-linecap': 'round',
+          'stroke-linejoin': 'round',
+          'stroke-width': '2',
+          d: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z M8 11V4a2 2 0 012-2h2a2 2 0 012 2v7a2 2 0 01-2 2H8a2 2 0 01-2-2z',
+        }),
+      ]
+    );
+  },
+};
+
 // Меню навигации
 const menuItems = [
-  { name: 'Главная', path: '/admin', icon: HomeIcon },
-  { name: 'Пользователи', path: '/admin/users', icon: UsersIcon },
-  { name: 'Площадки', path: '/admin/locations', icon: LocationIcon },
-  { name: 'Мероприятия', path: '/admin/events', icon: CalendarIcon },
-  { name: 'Коллективы', path: '/admin/groups', icon: UserGroupIcon },
-  { name: 'Профиль', path: '/admin/profile', icon: UserIcon },
-  { name: 'Настройки', path: '/admin/settings', icon: CogIcon },
+  {
+    name: 'Главная',
+    path: '/admin',
+    icon: HomeIcon,
+    roles: ['ADMIN', 'MODERATOR', 'USER'],
+  },
+  {
+    name: 'Аккаунты',
+    path: '/admin/accounts',
+    icon: LockIcon,
+    roles: ['ADMIN'],
+  },
+  {
+    name: 'Пользователи',
+    path: '/admin/users',
+    icon: UsersIcon,
+    roles: ['ADMIN', 'MODERATOR'],
+  },
+  {
+    name: 'Площадки',
+    path: '/admin/locations',
+    icon: LocationIcon,
+    roles: ['ADMIN', 'MODERATOR'],
+  },
+  {
+    name: 'Мероприятия',
+    path: '/admin/events',
+    icon: CalendarIcon,
+    roles: ['ADMIN', 'MODERATOR', 'USER'],
+  },
+  {
+    name: 'Коллективы',
+    path: '/admin/groups',
+    icon: UserGroupIcon,
+    roles: ['ADMIN', 'MODERATOR', 'USER'],
+  },
+  {
+    name: 'Заявки',
+    path: '/admin/requests',
+    icon: DocumentTextIcon,
+    roles: ['ADMIN', 'MODERATOR', 'USER'],
+  },
+  {
+    name: 'Участники',
+    path: '/admin/member',
+    icon: UserIcon,
+    roles: ['ADMIN', 'MODERATOR', 'USER'],
+  },
+  {
+    name: 'Участники заявок',
+    path: '/admin/member-on-request',
+    icon: UserPlusIcon,
+    roles: ['ADMIN', 'MODERATOR', 'USER'],
+  },
+  {
+    name: 'Мастер-классы',
+    path: '/admin/mclass',
+    icon: BookOpenIcon,
+    roles: ['ADMIN'],
+  },
+  {
+    name: 'Настройки',
+    path: '/admin/settings',
+    icon: CogIcon,
+    roles: ['ADMIN', 'MODERATOR', 'USER'],
+  },
 ];
+
+// Вычисляемое свойство для фильтрации меню по роли пользователя
+const filteredMenuItems = computed(() => {
+  if (!userRole.value) return [];
+  return menuItems.filter((item) => item.roles.includes(userRole.value));
+});
+
+// Функция для получения роли пользователя
+const fetchUserRole = async () => {
+  try {
+    const response = await fetch(
+      'https://igor-plaxin.ru/star-way/token-payload ',
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('Ошибка получения данных пользователя');
+    }
+
+    const data = await response.json();
+    userRole.value = data.role;
+  } catch (error) {
+    console.error('Ошибка:', error);
+    userRole.value = null;
+  }
+};
 
 // Функция для проверки активного маршрута
 function isActive(path) {
@@ -306,6 +493,9 @@ const closeSidebar = () => {
 onMounted(() => {
   const savedTheme = localStorage.getItem('theme');
   isDarkMode.value = savedTheme === 'dark';
+
+  // Получение роли пользователя
+  fetchUserRole();
 
   // Загрузка состояния сайдбара
   const savedSidebarState = localStorage.getItem('sidebarCollapsed');

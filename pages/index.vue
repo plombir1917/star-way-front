@@ -371,6 +371,76 @@
         </div>
       </div>
     </section>
+    <!-- Секция Мастер-классы -->
+    <section
+      id="mclasses"
+      class="py-20 bg-gradient-to-b from-white to-purple-50 dark:from-gray-900 dark:to-gray-800"
+    >
+      <div class="container mx-auto px-4">
+        <div class="text-center mb-16">
+          <h2
+            class="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-4"
+          >
+            Онлайн-мастер-классы
+          </h2>
+          <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+            Повышайте свои навыки танцев с профессионалами через наши
+            онлайн-мастер-классы
+          </p>
+        </div>
+
+        <div v-if="loading" class="flex justify-center items-center h-64">
+          <div
+            class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"
+          ></div>
+        </div>
+
+        <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div
+            v-for="mclass in featuredMClasses"
+            :key="mclass.id"
+            class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transition duration-300 transform hover:-translate-y-1 hover:shadow-xl"
+          >
+            <div
+              class="h-48 bg-gradient-to-r from-purple-600 to-indigo-600 relative"
+            >
+              <div class="absolute top-4 right-4">
+                <span
+                  class="px-3 py-1 bg-white/30 backdrop-blur-sm text-white text-sm font-semibold rounded-full"
+                >
+                  {{ mclass.cost }} ₽
+                </span>
+              </div>
+            </div>
+            <div class="p-6">
+              <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-3">
+                {{ mclass.name }}
+              </h3>
+              <p class="text-gray-600 dark:text-gray-300 mb-6 line-clamp-3">
+                {{ mclass.description }}
+              </p>
+              <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                <button
+                  @click="openTelegramLink"
+                  class="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition duration-200"
+                >
+                  Записаться
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="allMClasses.length > 3" class="text-center mt-12">
+          <button
+            @click="scrollToMClasses"
+            class="px-6 py-3 bg-transparent border-2 border-purple-600 text-purple-600 rounded-lg hover:bg-purple-600 hover:text-white transition duration-300 transform hover:scale-105"
+          >
+            Посмотреть все мастер-классы
+          </button>
+        </div>
+      </div>
+    </section>
 
     <!-- Testimonials Section -->
     <section id="testimonials" class="py-20 bg-gray-50 dark:bg-gray-800">
@@ -640,5 +710,78 @@
 </template>
 
 <script setup>
-// Здесь можно добавить логику для лендинга, если потребуется
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+const allMClasses = ref([]);
+const loading = ref(true);
+
+// Функция открытия ссылки на Telegram
+const openTelegramLink = () => {
+  window.open('https://t.me/mosyakin_ilya ', '_blank', 'noopener noreferrer');
+};
+
+// Получение отображаемых мастер-классов
+const featuredMClasses = computed(() => {
+  return allMClasses.value.slice(0, 3);
+});
+
+// Форматирование стоимости
+const formatCost = (cost) => {
+  return cost.toLocaleString('ru-RU') + ' ₽';
+};
+
+// Обрезка описания
+const truncateDescription = (description) => {
+  return description.length > 100
+    ? description.slice(0, 100) + '...'
+    : description;
+};
+
+// Загрузка мастер-классов
+const fetchMClasses = async () => {
+  try {
+    const response = await fetch('https://igor-plaxin.ru/star-way/mclass ', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+      },
+    });
+
+    if (!response.ok) throw new Error('Ошибка загрузки мастер-классов');
+
+    const data = await response.json();
+    allMClasses.value = data.map((mclass) => ({
+      id: mclass.id,
+      name: mclass.name || '',
+      description: mclass.description || '',
+      cost: mclass.cost || 0,
+    }));
+  } catch (error) {
+    console.error('Ошибка при загрузке мастер-классов:', error);
+  } finally {
+    loading.value = false;
+  }
+};
+
+// Скролл к разделу мастер-классов
+const scrollToMClasses = () => {
+  const section = document.getElementById('mclasses');
+  if (section) {
+    section.scrollIntoView({ behavior: 'smooth' });
+  }
+};
+
+// Скролл к регистрации
+const scrollToRegistration = () => {
+  const section = document.getElementById('registration');
+  if (section) {
+    section.scrollIntoView({ behavior: 'smooth' });
+  }
+};
+
+// Загрузка данных при монтировании
+onMounted(() => {
+  fetchMClasses();
+});
 </script>

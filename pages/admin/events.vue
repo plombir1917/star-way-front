@@ -38,7 +38,6 @@
         Добавить мероприятие
       </button>
     </div>
-
     <!-- Карточки мероприятий -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <div
@@ -59,7 +58,6 @@
             class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
           ></div>
         </div>
-
         <!-- Контент -->
         <div class="p-4">
           <div class="flex items-start justify-between mb-2">
@@ -74,11 +72,9 @@
               {{ event.id }}
             </span>
           </div>
-
           <p class="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
             {{ event.description }}
           </p>
-
           <div class="space-y-1.5 mb-4">
             <div
               class="flex items-center text-xs text-gray-500 dark:text-gray-400"
@@ -122,7 +118,7 @@
                   d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                 />
               </svg>
-              ID площадки: {{ event.location_id }}
+              {{ getLocationName(event.location_id) }}
             </div>
             <div
               class="flex items-center text-xs text-gray-500 dark:text-gray-400"
@@ -144,7 +140,6 @@
               ID аккаунта: {{ event.account_id }}
             </div>
           </div>
-
           <!-- Кнопки действий -->
           <div
             class="flex justify-end gap-2 pt-3 border-t border-gray-100 dark:border-gray-700"
@@ -192,7 +187,6 @@
           </div>
         </div>
       </div>
-
       <div
         v-if="filteredEvents.length === 0"
         class="col-span-full text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-dashed border-gray-200 dark:border-gray-700"
@@ -214,7 +208,6 @@
         <p class="text-gray-500 dark:text-gray-400">Нет мероприятий</p>
       </div>
     </div>
-
     <!-- Модальное окно -->
     <div
       v-if="showModal"
@@ -293,14 +286,21 @@
                     <div>
                       <label
                         class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                        >ID площадки</label
+                        >Площадка</label
                       >
-                      <input
-                        type="number"
+                      <select
                         v-model="formData.location_id"
                         class="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition duration-200"
                         required
-                      />
+                      >
+                        <option
+                          v-for="location in locations"
+                          :key="location.id"
+                          :value="location.id"
+                        >
+                          {{ location.name }}
+                        </option>
+                      </select>
                     </div>
                     <div>
                       <label
@@ -309,8 +309,9 @@
                       >
                       <input
                         type="number"
-                        v-model="formData.account_id"
+                        v-model.number="formData.account_id"
                         class="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition duration-200"
+                        readonly
                         required
                       />
                     </div>
@@ -344,7 +345,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import Toaster from '~/components/Toaster.vue';
 
 definePageMeta({ layout: 'admin' });
@@ -362,6 +363,48 @@ const formData = ref({
   account_id: '',
 });
 const searchQuery = ref('');
+const locations = ref([]);
+
+// Получение информации из токена
+const fetchTokenPayload = async () => {
+  try {
+    const response = await fetch(
+      'https://igor-plaxin.ru/star-way/token-payload ',
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      }
+    );
+    if (!response.ok) throw new Error('Ошибка при получении данных токена');
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    toaster.value?.addToast(
+      'Ошибка при получении данных токена: ' + error.message,
+      'error'
+    );
+    return null;
+  }
+};
+
+// Получение площадок
+const fetchLocations = async () => {
+  try {
+    const response = await fetch('https://igor-plaxin.ru/star-way/location ', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+      },
+    });
+    if (!response.ok) throw new Error('Ошибка при загрузке площадок');
+    locations.value = await response.json();
+  } catch (error) {
+    toaster.value?.addToast(
+      'Ошибка при загрузке площадок: ' + error.message,
+      'error'
+    );
+  }
+};
 
 // Форматирование даты
 const formatEventDate = (dateString) => {
@@ -378,7 +421,7 @@ const formatEventDate = (dateString) => {
 // Загрузка мероприятий
 const fetchEvents = async () => {
   try {
-    const response = await fetch('https://igor-plaxin.ru/star-way/event', {
+    const response = await fetch('https://igor-plaxin.ru/star-way/event ', {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('access_token')}`,
       },
@@ -393,17 +436,30 @@ const fetchEvents = async () => {
   }
 };
 
+// Получение имени площадки
+const getLocationName = (locationId) => {
+  const location = locations.value.find((loc) => loc.id === locationId);
+  return location ? location.name : `Площадка ID: ${locationId}`;
+};
+
 // Открытие модального окна для создания
-const openCreateModal = () => {
+const openCreateModal = async () => {
   isEditing.value = false;
   formData.value = {
     id: '',
     name: '',
     description: '',
     date: '',
-    location_id: '',
+    location_id: locations.value[0]?.id || '',
     account_id: '',
   };
+
+  // Получаем данные пользователя из токена
+  const tokenData = await fetchTokenPayload();
+  if (tokenData && tokenData.id) {
+    formData.value.account_id = tokenData.id;
+  }
+
   showModal.value = true;
 };
 
@@ -438,8 +494,8 @@ const closeModal = () => {
 const saveEvent = async () => {
   try {
     const url = isEditing.value
-      ? `https://igor-plaxin.ru/star-way/event/${formData.value.id}`
-      : 'https://igor-plaxin.ru/star-way/event';
+      ? `https://igor-plaxin.ru/star-way/event/ ${formData.value.id}`
+      : 'https://igor-plaxin.ru/star-way/event ';
     const method = isEditing.value ? 'PATCH' : 'POST';
     const payload = { ...formData.value };
     if (!isEditing.value) delete payload.id;
@@ -460,7 +516,6 @@ const saveEvent = async () => {
       },
       body: JSON.stringify(payload),
     });
-
     if (!response.ok) throw new Error('Ошибка при сохранении мероприятия');
     await fetchEvents();
     closeModal();
@@ -483,7 +538,7 @@ const deleteEvent = async (id) => {
   if (!confirm('Вы уверены, что хотите удалить это мероприятие?')) return;
   try {
     const response = await fetch(
-      `https://igor-plaxin.ru/star-way/event/${id}`,
+      `https://igor-plaxin.ru/star-way/event/ ${id}`,
       {
         method: 'DELETE',
         headers: {
@@ -509,7 +564,8 @@ const filteredEvents = computed(() => {
   });
 });
 
-onMounted(() => {
-  fetchEvents();
+onMounted(async () => {
+  await fetchLocations(); // Сначала загружаем площадки
+  await fetchEvents(); // Затем загружаем мероприятия
 });
 </script>
