@@ -56,7 +56,6 @@
             class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
           ></div>
         </div>
-
         <!-- Контент -->
         <div class="p-4">
           <div class="flex items-start justify-between mb-2">
@@ -71,11 +70,9 @@
               {{ group.id }}
             </span>
           </div>
-
           <p class="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
             {{ group.description }}
           </p>
-
           <div class="space-y-1.5 mb-4">
             <div
               class="flex items-center text-xs text-gray-500 dark:text-gray-400"
@@ -116,7 +113,6 @@
               ID: {{ group.user_id }}
             </div>
           </div>
-
           <!-- Кнопки действий -->
           <div
             class="flex justify-end gap-2 pt-3 border-t border-gray-100 dark:border-gray-700"
@@ -164,7 +160,6 @@
           </div>
         </div>
       </div>
-
       <div
         v-if="filteredGroups.length === 0"
         class="col-span-full text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-dashed border-gray-200 dark:border-gray-700"
@@ -299,13 +294,10 @@
     </div>
   </div>
 </template>
-
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import Toaster from '~/components/Toaster.vue';
-
 definePageMeta({ layout: 'admin' });
-
 const toaster = ref(null);
 const groups = ref([]);
 const showModal = ref(false);
@@ -318,7 +310,51 @@ const formData = ref({
   user_id: '',
 });
 const searchQuery = ref('');
+const profileData = ref({
+  id: null,
+});
+const userRole = ref(null);
 
+// Функция получения профиля
+const fetchProfile = async () => {
+  try {
+    const response = await fetch('https://igor-plaxin.ru/star-way/profile', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+      },
+    });
+    if (!response.ok) throw new Error('Ошибка при загрузке профиля');
+    const data = await response.json();
+    profileData.value.id = data.id;
+  } catch (error) {
+    toaster.value?.addToast(
+      'Ошибка при загрузке профиля: ' + error.message,
+      'error'
+    );
+  }
+};
+
+// Функция получения роли
+const fetchUserRole = async () => {
+  try {
+    const response = await fetch(
+      'https://igor-plaxin.ru/star-way/token-payload',
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      }
+    );
+    if (!response.ok) throw new Error('Ошибка получения данных пользователя');
+    const data = await response.json();
+    userRole.value = data.role;
+  } catch (error) {
+    console.error('Ошибка получения роли:', error);
+    userRole.value = null;
+  }
+};
+
+// Загрузка данных
 const fetchGroups = async () => {
   try {
     const response = await fetch('https://igor-plaxin.ru/star-way/group', {
@@ -327,7 +363,14 @@ const fetchGroups = async () => {
       },
     });
     if (!response.ok) throw new Error('Ошибка при загрузке коллективов');
-    groups.value = await response.json();
+    let data = await response.json();
+
+    // Фильтрация для роли USER
+    if (userRole.value === 'USER') {
+      data = data.filter((group) => group.user_id === profileData.value.id);
+    }
+
+    groups.value = data;
   } catch (error) {
     toaster.value?.addToast(
       'Ошибка при загрузке коллективов: ' + error.message,
@@ -336,6 +379,20 @@ const fetchGroups = async () => {
   }
 };
 
+onMounted(async () => {
+  await fetchProfile();
+  await fetchUserRole();
+  await fetchGroups();
+});
+
+// Фильтрация по поисковому запросу
+const filteredGroups = computed(() => {
+  return groups.value.filter((group) =>
+    group.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+  );
+});
+
+// Функции модального окна
 const openCreateModal = () => {
   isEditing.value = false;
   formData.value = {
@@ -426,14 +483,4 @@ const deleteGroup = async (id) => {
     );
   }
 };
-
-const filteredGroups = computed(() => {
-  return groups.value.filter((group) =>
-    group.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-  );
-});
-
-onMounted(() => {
-  fetchGroups();
-});
 </script>
