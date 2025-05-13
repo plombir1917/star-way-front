@@ -9,9 +9,9 @@
         Вот краткий обзор вашей административной панели
       </p>
     </div>
-
     <!-- Статистика -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <!-- Пользователи -->
       <div
         class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transition-transform duration-300 hover:scale-105"
       >
@@ -56,6 +56,8 @@
           </div>
         </div>
       </div>
+
+      <!-- Мероприятия -->
       <div
         class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transition-transform duration-300 hover:scale-105"
       >
@@ -100,6 +102,8 @@
           </div>
         </div>
       </div>
+
+      <!-- Коллективы -->
       <div
         class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transition-transform duration-300 hover:scale-105"
       >
@@ -144,6 +148,8 @@
           </div>
         </div>
       </div>
+
+      <!-- Заявки -->
       <div
         class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transition-transform duration-300 hover:scale-105"
       >
@@ -291,24 +297,27 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import Toaster from '~/components/Toaster.vue';
 
+// === Инициализация ===
 const router = useRouter();
-definePageMeta({
-  layout: 'admin',
-});
+definePageMeta({ layout: 'admin' });
 
+// === Реактивные переменные ===
 const toaster = ref(null);
 const fullName = ref('');
 const loadingProfile = ref(true);
+
 const stats = ref({
-  users: 1245,
-  usersChange: 12,
-  events: 48,
-  eventsChange: 8,
-  groups: 32,
-  groupsChange: 5,
-  applications: 89,
-  applicationsChange: -3,
+  users: 0,
+  usersChange: 5,
+  events: 0,
+  eventsChange: 10,
+  groups: 0,
+  groupsChange: 13,
+  applications: 0,
+  applicationsChange: 15,
 });
+
+// === Данные для отображения ===
 const activityData = ref([
   { label: 'Пн', value: 65 },
   { label: 'Вт', value: 45 },
@@ -318,6 +327,7 @@ const activityData = ref([
   { label: 'Сб', value: 50 },
   { label: 'Вс', value: 70 },
 ]);
+
 const recentActions = ref([
   {
     title: 'Добавлено новое мероприятие "Танцевальный фестиваль"',
@@ -348,6 +358,7 @@ const recentActions = ref([
     iconColor: 'text-yellow-600 dark:text-yellow-400',
   },
 ]);
+
 const quickActions = ref([
   {
     name: 'Создать заявку',
@@ -379,16 +390,108 @@ const quickActions = ref([
   },
 ]);
 
-// Получение полного имени
+// === Получение данных ===
+const users = ref([]);
+const events = ref([]);
+const groups = ref([]);
+const requests = ref([]);
+
+// === Функции получения данных ===
+const fetchUsers = async () => {
+  try {
+    const response = await fetch('https://igor-plaxin.ru/star-way/user ', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+      },
+    });
+
+    if (!response.ok) throw new Error('Ошибка при загрузке пользователей');
+
+    const data = await response.json();
+    users.value = data;
+    stats.value.users = data.length;
+  } catch (error) {
+    console.error('Ошибка при загрузке пользователей:', error);
+    toaster.value?.addToast(
+      'Ошибка при загрузке пользователей: ' + error.message,
+      'error'
+    );
+  }
+};
+
+const fetchEvents = async () => {
+  try {
+    const response = await fetch('https://igor-plaxin.ru/star-way/event ', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+      },
+    });
+
+    if (!response.ok) throw new Error('Ошибка при загрузке мероприятий');
+
+    const data = await response.json();
+    events.value = data;
+    stats.value.events = data.length;
+  } catch (error) {
+    console.error('Ошибка при загрузке мероприятий:', error);
+    toaster.value?.addToast(
+      'Ошибка при загрузке мероприятий: ' + error.message,
+      'error'
+    );
+  }
+};
+
+const fetchGroups = async () => {
+  try {
+    const response = await fetch('https://igor-plaxin.ru/star-way/group ', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+      },
+    });
+
+    if (!response.ok) throw new Error('Ошибка при загрузке коллективов');
+
+    const data = await response.json();
+    groups.value = data;
+    stats.value.groups = data.length;
+  } catch (error) {
+    console.error('Ошибка при загрузке коллективов:', error);
+    toaster.value?.addToast(
+      'Ошибка при загрузке коллективов: ' + error.message,
+      'error'
+    );
+  }
+};
+
+const fetchRequests = async () => {
+  try {
+    const response = await fetch('https://igor-plaxin.ru/star-way/request ', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+      },
+    });
+
+    if (!response.ok) throw new Error('Ошибка при загрузке заявок');
+
+    const data = await response.json();
+    requests.value = data;
+    stats.value.applications = data.length;
+  } catch (error) {
+    console.error('Ошибка при загрузке заявок:', error);
+    toaster.value?.addToast(
+      'Ошибка при загрузке заявок: ' + error.message,
+      'error'
+    );
+  }
+};
+
+// === Профиль ===
 const getFullName = (profile) => {
   const parts = [profile.surname, profile.name];
-  if (profile.patronymic) {
-    parts.push(profile.patronymic);
-  }
+  if (profile.patronymic) parts.push(profile.patronymic);
   return parts.filter(Boolean).join(' ');
 };
 
-// Загрузка данных профиля
 const fetchProfile = async () => {
   try {
     const response = await fetch('https://igor-plaxin.ru/star-way/profile ', {
@@ -398,9 +501,7 @@ const fetchProfile = async () => {
       },
     });
 
-    if (!response.ok) {
-      throw new Error('Ошибка загрузки профиля');
-    }
+    if (!response.ok) throw new Error('Ошибка загрузки профиля');
 
     const data = await response.json();
     fullName.value = getFullName(data);
@@ -415,14 +516,18 @@ const fetchProfile = async () => {
   }
 };
 
-// Обработчик быстрых действий
+// === Обработчики ===
 const handleQuickAction = (path) => {
   router.push(path);
 };
 
-// Загрузка данных при монтировании
-onMounted(() => {
-  fetchProfile();
+// === Загрузка данных ===
+onMounted(async () => {
+  await fetchProfile();
+  await fetchUsers();
+  await fetchEvents();
+  await fetchGroups();
+  await fetchRequests();
 });
 </script>
 
@@ -431,6 +536,7 @@ main {
   margin-top: 4rem;
   margin-left: 0;
 }
+
 @media (min-width: 768px) {
   main {
     margin-left: 16rem;
