@@ -1,7 +1,6 @@
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <Toaster ref="toaster" />
-
     <!-- Заголовок -->
     <div class="mb-8">
       <h1 class="text-3xl font-bold text-gray-800 dark:text-white">
@@ -11,7 +10,6 @@
         Здесь вы можете управлять заявками на участие в фестивалях
       </p>
     </div>
-
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
       <!-- Кнопка создания -->
       <div class="flex justify-between items-center mb-6">
@@ -36,7 +34,6 @@
           Создать заявку
         </button>
       </div>
-
       <!-- Таблица -->
       <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -122,7 +119,7 @@
                 <span
                   :class="{
                     'inline-flex px-2 text-xs font-semibold leading-5 rounded-full bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100':
-                      request.status === 'APPROVED',
+                      request.status === 'ACCEPTED',
                     'inline-flex px-2 text-xs font-semibold leading-5 rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100':
                       request.status === 'SEND',
                     'inline-flex px-2 text-xs font-semibold leading-5 rounded-full bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100':
@@ -134,10 +131,12 @@
               </td>
               <td
                 class="px-6 py-4 whitespace-nowrap text-right text-base font-medium flex gap-2 justify-end"
+                v-if="canEdit"
               >
                 <button
                   @click="openEditModal(request)"
                   class="text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300 transition duration-200"
+                  :disabled="!canEdit"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -159,6 +158,7 @@
                   @click="deleteRequest(request.id)"
                   class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition duration-200"
                   title="Удалить"
+                  :disabled="!canEdit"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -181,7 +181,6 @@
         </table>
       </div>
     </div>
-
     <!-- Модальное окно -->
     <div
       v-if="showModal"
@@ -261,6 +260,23 @@
                         </option>
                       </select>
                     </div>
+
+                    <!-- Поле для изменения статуса (только при редактировании) -->
+                    <div v-if="isEditing">
+                      <label
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                        >Статус</label
+                      >
+                      <select
+                        v-model="formData.status"
+                        required
+                        class="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition duration-200"
+                      >
+                        <option value="SEND">В ожидании</option>
+                        <option value="ACCEPTED">Одобрено</option>
+                        <option value="REJECTED">Отклонено</option>
+                      </select>
+                    </div>
                   </form>
                 </div>
               </div>
@@ -289,27 +305,44 @@
     </div>
   </div>
 </template>
-
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import Toaster from '~/components/Toaster.vue';
-
 definePageMeta({
   layout: 'admin',
 });
-
 const toaster = ref(null);
 const showModal = ref(false);
 const isEditing = ref(false);
-
 const requests = ref([]);
 const events = ref([]);
-
 const formData = ref({
   name: '',
   description: '',
   event_id: null,
+  status: null,
 });
+const userRole = ref(null); // Хранение роли пользователя
+
+// Функция для получения роли пользователя
+const fetchUserRole = async () => {
+  try {
+    const response = await fetch(
+      'https://igor-plaxin.ru/star-way/token-payload ',
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      }
+    );
+    if (!response.ok) throw new Error('Ошибка получения данных пользователя');
+    const data = await response.json();
+    userRole.value = data.role;
+  } catch (error) {
+    console.error('Ошибка получения роли:', error);
+    userRole.value = null;
+  }
+};
 
 // Получение заявок
 const fetchRequests = async () => {
@@ -347,6 +380,11 @@ const fetchEvents = async () => {
   }
 };
 
+// Вычисляемое свойство для проверки возможности редактирования
+const canEdit = computed(() => {
+  return ['ADMIN', 'MODERATOR'].includes(userRole.value);
+});
+
 // Открытие формы создания
 const openCreateModal = () => {
   isEditing.value = false;
@@ -372,6 +410,7 @@ const closeModal = () => {
     name: '',
     description: '',
     event_id: null,
+    status: null,
   };
 };
 
@@ -379,23 +418,26 @@ const closeModal = () => {
 const saveRequest = async () => {
   try {
     const url = isEditing.value
-      ? `https://igor-plaxin.ru/star-way/request/ ${formData.value.id}`
-      : 'https://igor-plaxin.ru/star-way/request ';
+      ? `https://igor-plaxin.ru/star-way/request/${formData.value.id}`
+      : 'https://igor-plaxin.ru/star-way/request';
     const method = isEditing.value ? 'PATCH' : 'POST';
 
-    // Создаем копию formData без поля id
-    const { id, ...requestData } = formData.value;
+    // Для новой заявки устанавливаем статус по умолчанию
+    const requestData = { ...formData.value };
+    if (!isEditing.value) {
+      requestData.status = 'SEND'; // Устанавливаем статус по умолчанию
+    }
+
     const response = await fetch(url, {
       method,
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${localStorage.getItem('access_token')}`,
       },
-      body: JSON.stringify(requestData), // id не отправляется
+      body: JSON.stringify(requestData),
     });
 
     if (!response.ok) throw new Error('Ошибка при сохранении заявки');
-
     await fetchRequests();
     closeModal();
     toaster.value?.addToast(
@@ -413,10 +455,9 @@ const saveRequest = async () => {
 // Удаление заявки
 const deleteRequest = async (id) => {
   if (!confirm('Вы уверены, что хотите удалить эту заявку?')) return;
-
   try {
     const response = await fetch(
-      `https://igor-plaxin.ru/star-way/request/ ${id}`,
+      `https://igor-plaxin.ru/star-way/request/${id}`,
       {
         method: 'DELETE',
         headers: {
@@ -424,9 +465,7 @@ const deleteRequest = async (id) => {
         },
       }
     );
-
     if (!response.ok) throw new Error('Ошибка при удалении заявки');
-
     // Обновляем список заявок
     await fetchRequests();
     toaster.value?.addToast('Заявка успешно удалена', 'success');
@@ -453,6 +492,7 @@ const statusLabel = (status) => {
 };
 
 onMounted(() => {
+  fetchUserRole();
   fetchRequests();
   fetchEvents();
 });
