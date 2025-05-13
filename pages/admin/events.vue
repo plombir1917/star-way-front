@@ -20,6 +20,7 @@
       />
       <button
         @click="openCreateModal"
+        v-if="userRole !== 'USER'"
         class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition duration-200"
       >
         <svg
@@ -146,6 +147,7 @@
           >
             <button
               @click="editEvent(event)"
+              v-if="userRole !== 'USER'"
               class="p-1.5 text-gray-500 hover:text-purple-600 dark:text-gray-400 dark:hover:text-purple-400 transition-colors duration-200"
               aria-label="Редактировать"
             >
@@ -166,6 +168,7 @@
             </button>
             <button
               @click="deleteEvent(event.id)"
+              v-if="userRole !== 'USER'"
               class="p-1.5 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors duration-200"
               aria-label="Удалить"
             >
@@ -364,6 +367,27 @@ const formData = ref({
 });
 const searchQuery = ref('');
 const locations = ref([]);
+const userRole = ref(null); // Новое поле для хранения роли пользователя
+
+// Функция получения роли
+const fetchUserRole = async () => {
+  try {
+    const response = await fetch(
+      'https://igor-plaxin.ru/star-way/token-payload',
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      }
+    );
+    if (!response.ok) throw new Error('Ошибка получения данных пользователя');
+    const data = await response.json();
+    userRole.value = data.role;
+  } catch (error) {
+    console.error('Ошибка получения роли:', error);
+    userRole.value = null;
+  }
+};
 
 // Получение информации из токена
 const fetchTokenPayload = async () => {
@@ -565,6 +589,7 @@ const filteredEvents = computed(() => {
 });
 
 onMounted(async () => {
+  await fetchUserRole();
   await fetchLocations(); // Сначала загружаем площадки
   await fetchEvents(); // Затем загружаем мероприятия
 });
