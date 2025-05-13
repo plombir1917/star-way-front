@@ -76,7 +76,6 @@
               @change="filterAccounts"
             >
               <option value="">Все роли</option>
-              <option value="USER">Пользователь</option>
               <option value="MODERATOR">Модератор</option>
               <option value="ADMIN">Администратор</option>
             </select>
@@ -403,7 +402,6 @@
                         class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition duration-200"
                         required
                       >
-                        <option value="USER">Пользователь</option>
                         <option value="MODERATOR">Модератор</option>
                         <option value="ADMIN">Администратор</option>
                       </select>
@@ -650,13 +648,12 @@ const displayedPages = computed(() => {
 
 // Цвета для ролей
 const roleColors = {
-  USER: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-  MODERATOR: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+  MODERATOR:
+    'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
   ADMIN:
     'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
 };
 const roleLabels = {
-  USER: 'Пользователь',
   MODERATOR: 'Модератор',
   ADMIN: 'Администратор',
 };
