@@ -1,9 +1,7 @@
-```vue
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Toaster -->
     <Toaster ref="toaster" />
-
     <!-- Заголовок -->
     <div class="mb-8">
       <h1 class="text-3xl font-bold text-gray-800 dark:text-white">
@@ -13,7 +11,6 @@
         Здесь вы можете управлять участниками системы
       </p>
     </div>
-
     <!-- Основной контент -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
       <!-- Заголовок и кнопка добавления -->
@@ -49,7 +46,6 @@
           Добавить участника
         </button>
       </div>
-
       <!-- Фильтры и поиск -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-6">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -96,14 +92,12 @@
           </div>
         </div>
       </div>
-
       <!-- Сетка участников -->
       <div v-if="loading" class="flex justify-center items-center h-64">
         <div
           class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"
         ></div>
       </div>
-
       <div v-else-if="filteredMembers.length === 0" class="text-center py-12">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -126,7 +120,6 @@
           Попробуйте добавить нового участника или изменить фильтры.
         </p>
       </div>
-
       <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <div
           v-for="member in paginatedMembers"
@@ -151,7 +144,6 @@
                 </p>
               </div>
             </div>
-
             <div class="mt-4">
               <div
                 class="flex items-center text-sm text-gray-500 dark:text-gray-400"
@@ -192,8 +184,10 @@
                 <span>{{ member.phone }}</span>
               </div>
             </div>
-
-            <div class="mt-6 flex justify-end space-x-2">
+            <div
+              v-if="userRole !== 'USER'"
+              class="mt-6 flex justify-end space-x-2"
+            >
               <button
                 @click="editMember(member)"
                 class="p-2 text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300 rounded-full hover:bg-purple-50 dark:hover:bg-gray-600 transition duration-200"
@@ -238,7 +232,6 @@
           </div>
         </div>
       </div>
-
       <!-- Пагинация -->
       <div
         v-if="filteredMembers.length > 0"
@@ -321,7 +314,6 @@
         </div>
       </div>
     </div>
-
     <!-- Модальное окно добавления/редактирования участника -->
     <div
       v-if="showMemberModal"
@@ -478,7 +470,6 @@
         </div>
       </div>
     </div>
-
     <!-- Модальное окно подтверждения удаления -->
     <div
       v-if="showDeleteModal"
@@ -566,16 +557,13 @@
     </div>
   </div>
 </template>
-
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-
 const router = useRouter();
 definePageMeta({
   layout: 'admin',
 });
-
 const toaster = ref(null);
 const members = ref([]);
 const groups = ref([]);
@@ -588,6 +576,50 @@ const showDeleteModal = ref(false);
 const isEditing = ref(false);
 const memberToDelete = ref(null);
 const loading = ref(true);
+const userRole = ref(null); // Новое поле для хранения роли пользователя
+const profileData = ref({
+  id: null,
+});
+
+// Функция получения профиля
+const fetchProfile = async () => {
+  try {
+    const response = await fetch('https://igor-plaxin.ru/star-way/profile', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+      },
+    });
+    if (!response.ok) throw new Error('Ошибка при загрузке профиля');
+    const data = await response.json();
+    console.log(data);
+    profileData.value.id = data.id;
+  } catch (error) {
+    toaster.value?.addToast(
+      'Ошибка при загрузке профиля: ' + error.message,
+      'error'
+    );
+  }
+};
+
+// Функция получения роли
+const fetchUserRole = async () => {
+  try {
+    const response = await fetch(
+      'https://igor-plaxin.ru/star-way/token-payload',
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      }
+    );
+    if (!response.ok) throw new Error('Ошибка получения данных пользователя');
+    const data = await response.json();
+    userRole.value = data.role;
+  } catch (error) {
+    console.error('Ошибка получения роли:', error);
+    userRole.value = null;
+  }
+};
 
 // Форма участника
 const memberForm = ref({
@@ -618,7 +650,6 @@ const getGroupName = (groupId) => {
 // Фильтрация участников
 const filteredMembers = computed(() => {
   let result = [...members.value];
-
   // Фильтрация по поиску
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
@@ -629,14 +660,12 @@ const filteredMembers = computed(() => {
         member.email.toLowerCase().includes(query)
     );
   }
-
   // Фильтрация по группе
   if (groupFilter.value) {
     result = result.filter(
       (member) => member.group_id === Number(groupFilter.value)
     );
   }
-
   return result;
 });
 
@@ -684,7 +713,12 @@ const displayedPages = computed(() => {
 const fetchMembers = async () => {
   try {
     loading.value = true;
-    const response = await fetch('https://igor-plaxin.ru/star-way/member', {
+    let url = 'https://igor-plaxin.ru/star-way/member';
+    // Используем новый API для пользователей с ролью USER
+    if (userRole.value === 'USER') {
+      url = 'https://igor-plaxin.ru/star-way/member/by-user';
+    }
+    const response = await fetch(url, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('access_token')}`,
       },
@@ -723,7 +757,12 @@ const fetchGroups = async () => {
     if (!response.ok) {
       throw new Error('Ошибка при загрузке групп');
     }
-    const data = await response.json();
+
+    let data = await response.json();
+    // Фильтрация для роли USER
+    if (userRole.value === 'USER') {
+      data = data.filter((group) => group.user_id === profileData.value.id);
+    }
     groups.value = data.map((group) => ({
       id: group.id,
       name: group.name || '',
@@ -787,7 +826,6 @@ const saveMember = async () => {
       ? `https://igor-plaxin.ru/star-way/member/${memberForm.value.id}`
       : 'https://igor-plaxin.ru/star-way/member';
     const method = isEditing.value ? 'PATCH' : 'POST';
-
     const response = await fetch(url, {
       method,
       headers: {
@@ -796,14 +834,11 @@ const saveMember = async () => {
       },
       body: JSON.stringify(memberForm.value),
     });
-
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || 'Ошибка при сохранении участника');
     }
-
     const updatedMember = await response.json();
-
     if (isEditing.value) {
       const index = members.value.findIndex((m) => m.id === updatedMember.id);
       if (index !== -1) {
@@ -814,7 +849,6 @@ const saveMember = async () => {
       members.value.push(updatedMember);
       toaster.value.addToast('Участник успешно добавлен', 'success');
     }
-
     closeMemberModal();
   } catch (error) {
     console.error('Ошибка при сохранении участника:', error);
@@ -844,12 +878,10 @@ const deleteMember = async () => {
         Authorization: `Bearer ${localStorage.getItem('access_token')}`,
       },
     });
-
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || 'Ошибка при удалении участника');
     }
-
     members.value = members.value.filter(
       (m) => m.id !== memberToDelete.value.id
     );
@@ -865,8 +897,10 @@ const deleteMember = async () => {
 };
 
 // Загрузка данных при монтировании компонента
-onMounted(() => {
-  fetchMembers();
-  fetchGroups();
+onMounted(async () => {
+  await fetchProfile();
+  await fetchUserRole(); // Сначала получаем роль пользователя
+  await fetchMembers(); // Затем загружаем участников
+  await fetchGroups(); // И группы
 });
 </script>
