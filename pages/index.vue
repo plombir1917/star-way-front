@@ -388,30 +388,23 @@
             онлайн-мастер-классы
           </p>
         </div>
-
         <div v-if="loading" class="flex justify-center items-center h-64">
           <div
             class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"
           ></div>
         </div>
-
         <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div
             v-for="mclass in featuredMClasses"
             :key="mclass.id"
             class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transition duration-300 transform hover:-translate-y-1 hover:shadow-xl"
           >
-            <div
-              class="h-48 bg-gradient-to-r from-purple-600 to-indigo-600 relative"
-            >
-              <div class="absolute top-4 right-4">
-                <span
-                  class="px-3 py-1 bg-white/30 backdrop-blur-sm text-white text-sm font-semibold rounded-full"
-                >
-                  {{ mclass.cost }} ₽
-                </span>
-              </div>
-            </div>
+            <!-- Блок с изображением мастер-класса -->
+            <img
+              src="/mclass.png"
+              alt="Изображение мастер-класса"
+              class="w-full h-48 object-cover"
+            />
             <div class="p-6">
               <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-3">
                 {{ mclass.name }}
@@ -430,7 +423,6 @@
             </div>
           </div>
         </div>
-
         <div v-if="allMClasses.length > 3" class="text-center mt-12">
           <button
             @click="scrollToMClasses"

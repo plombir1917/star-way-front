@@ -48,7 +48,7 @@
         <!-- Изображение с оверлеем -->
         <div class="relative h-36 overflow-hidden">
           <img
-            :src="group.image || '/assets/image/group-default.png'"
+            :src="group.image || '/group-default.png'"
             alt="Group Image"
             class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
           />
