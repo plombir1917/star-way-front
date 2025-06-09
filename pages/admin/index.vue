@@ -200,67 +200,16 @@
     </div>
 
     <!-- Графики и таблицы -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-      <!-- График активности -->
+    <div class="grid grid-cols-1 lg:grid-cols-1 gap-8 mb-8">
+      <!-- Диаграмма Ганта мероприятий -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
         <h2 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-          Активность за последние 7 дней
+          Расписание мероприятий
         </h2>
-        <div class="h-64 flex items-end justify-between">
-          <div
-            v-for="(day, index) in activityData"
-            :key="index"
-            class="flex flex-col items-center"
-          >
-            <div
-              class="w-12 h-32 bg-purple-100 dark:bg-purple-900 rounded-t-lg flex items-end"
-            >
-              <div
-                class="w-full bg-purple-600 dark:bg-purple-400 rounded-t-lg transition-all duration-500"
-                :style="{ height: `${day.value}%` }"
-              ></div>
-            </div>
-            <span class="mt-2 text-sm text-gray-500 dark:text-gray-400">{{
-              day.label
-            }}</span>
-          </div>
-        </div>
+        <GanttChart :events="events" />
       </div>
 
-      <!-- Последние действия -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-        <h2 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-          Последние действия
-        </h2>
-        <div class="space-y-4">
-          <div
-            v-for="(action, index) in recentActions"
-            :key="index"
-            class="flex items-start"
-          >
-            <div class="flex-shrink-0">
-              <div
-                class="w-8 h-8 rounded-full flex items-center justify-center"
-                :class="action.bgColor"
-              >
-                <component
-                  :is="action.icon"
-                  class="h-4 w-4"
-                  :class="action.iconColor"
-                />
-              </div>
-            </div>
-            <div class="ml-3">
-              <p class="text-sm font-medium text-gray-800 dark:text-white">
-                {{ action.title }}
-              </p>
-              <p class="text-xs text-gray-500 dark:text-gray-400">
-                {{ action.time }}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      
     </div>
 
     <!-- Быстрые действия -->
@@ -295,6 +244,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import GanttChart from '~/components/GanttChart.vue';
 
 // === Инициализация ===
 const router = useRouter();
