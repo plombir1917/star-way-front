@@ -388,14 +388,17 @@ async function handleRegister() {
     const payload = { ...formData.value };
     delete payload.password_confirmation;
 
-    const response = await fetch('https://igor-plaxin.ru/star-way/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
+    const response = await fetch(
+      'https://igor-plaxin.store/star-way/register',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify(payload),
+      }
+    );
 
     const data = await response.json();
 

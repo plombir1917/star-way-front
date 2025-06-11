@@ -451,7 +451,7 @@ const filteredMenuItems = computed(() => {
 const fetchUserRole = async () => {
   try {
     const response = await fetch(
-      'https://igor-plaxin.ru/star-way/token-payload ',
+      'https://igor-plaxin.store/star-way/token-payload ',
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,

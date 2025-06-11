@@ -373,7 +373,7 @@ const userRole = ref(null); // Новое поле для хранения ро�
 const fetchUserRole = async () => {
   try {
     const response = await fetch(
-      'https://igor-plaxin.ru/star-way/token-payload',
+      'https://igor-plaxin.store/star-way/token-payload',
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
@@ -393,7 +393,7 @@ const fetchUserRole = async () => {
 const fetchTokenPayload = async () => {
   try {
     const response = await fetch(
-      'https://igor-plaxin.ru/star-way/token-payload ',
+      'https://igor-plaxin.store/star-way/token-payload ',
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
@@ -415,11 +415,14 @@ const fetchTokenPayload = async () => {
 // Получение площадок
 const fetchLocations = async () => {
   try {
-    const response = await fetch('https://igor-plaxin.ru/star-way/location ', {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-      },
-    });
+    const response = await fetch(
+      'https://igor-plaxin.store/star-way/location ',
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      }
+    );
     if (!response.ok) throw new Error('Ошибка при загрузке площадок');
     locations.value = await response.json();
   } catch (error) {
@@ -445,7 +448,7 @@ const formatEventDate = (dateString) => {
 // Загрузка мероприятий
 const fetchEvents = async () => {
   try {
-    const response = await fetch('https://igor-plaxin.ru/star-way/event ', {
+    const response = await fetch('https://igor-plaxin.store/star-way/event ', {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('access_token')}`,
       },
@@ -518,8 +521,8 @@ const closeModal = () => {
 const saveEvent = async () => {
   try {
     const url = isEditing.value
-      ? `https://igor-plaxin.ru/star-way/event/ ${formData.value.id}`
-      : 'https://igor-plaxin.ru/star-way/event ';
+      ? `https://igor-plaxin.store/star-way/event/ ${formData.value.id}`
+      : 'https://igor-plaxin.store/star-way/event ';
     const method = isEditing.value ? 'PATCH' : 'POST';
     const payload = { ...formData.value };
     if (!isEditing.value) delete payload.id;
@@ -562,7 +565,7 @@ const deleteEvent = async (id) => {
   if (!confirm('Вы уверены, что хотите удалить это мероприятие?')) return;
   try {
     const response = await fetch(
-      `https://igor-plaxin.ru/star-way/event/ ${id}`,
+      `https://igor-plaxin.store/star-way/event/ ${id}`,
       {
         method: 'DELETE',
         headers: {

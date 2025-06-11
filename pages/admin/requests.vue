@@ -328,7 +328,7 @@ const userRole = ref(null); // Хранение роли пользовател�
 const fetchUserRole = async () => {
   try {
     const response = await fetch(
-      'https://igor-plaxin.ru/star-way/token-payload ',
+      'https://igor-plaxin.store/star-way/token-payload ',
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
@@ -347,11 +347,14 @@ const fetchUserRole = async () => {
 // Получение заявок
 const fetchRequests = async () => {
   try {
-    const response = await fetch('https://igor-plaxin.ru/star-way/request ', {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-      },
-    });
+    const response = await fetch(
+      'https://igor-plaxin.store/star-way/request ',
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      }
+    );
     if (!response.ok) throw new Error('Ошибка при загрузке заявок');
     requests.value = await response.json();
   } catch (error) {
@@ -365,7 +368,7 @@ const fetchRequests = async () => {
 // Получение мероприятий
 const fetchEvents = async () => {
   try {
-    const response = await fetch('https://igor-plaxin.ru/star-way/event ', {
+    const response = await fetch('https://igor-plaxin.store/star-way/event ', {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('access_token')}`,
       },
@@ -418,8 +421,8 @@ const closeModal = () => {
 const saveRequest = async () => {
   try {
     const url = isEditing.value
-      ? `https://igor-plaxin.ru/star-way/request/${formData.value.id}`
-      : 'https://igor-plaxin.ru/star-way/request';
+      ? `https://igor-plaxin.store/star-way/request/${formData.value.id}`
+      : 'https://igor-plaxin.store/star-way/request';
     const method = isEditing.value ? 'PATCH' : 'POST';
 
     // Для новой заявки устанавливаем статус по умолчанию
@@ -457,7 +460,7 @@ const deleteRequest = async (id) => {
   if (!confirm('Вы уверены, что хотите удалить эту заявку?')) return;
   try {
     const response = await fetch(
-      `https://igor-plaxin.ru/star-way/request/${id}`,
+      `https://igor-plaxin.store/star-way/request/${id}`,
       {
         method: 'DELETE',
         headers: {

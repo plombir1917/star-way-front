@@ -346,12 +346,15 @@ const pageTitle = computed(() => {
 const fetchProfile = async () => {
   try {
     loadingProfile.value = true;
-    const response = await fetch('https://igor-plaxin.ru/star-way/profile ', {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-      },
-    });
+    const response = await fetch(
+      'https://igor-plaxin.store/star-way/profile ',
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      }
+    );
 
     if (!response.ok) {
       throw new Error('Ошибка загрузки профиля');

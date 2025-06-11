@@ -208,8 +208,6 @@
         </h2>
         <GanttChart :events="events" />
       </div>
-
-      
     </div>
 
     <!-- Быстрые действия -->
@@ -348,7 +346,7 @@ const requests = ref([]);
 // === Функции получения данных ===
 const fetchUsers = async () => {
   try {
-    const response = await fetch('https://igor-plaxin.ru/star-way/user ', {
+    const response = await fetch('https://igor-plaxin.store/star-way/user ', {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('access_token')}`,
       },
@@ -370,7 +368,7 @@ const fetchUsers = async () => {
 
 const fetchEvents = async () => {
   try {
-    const response = await fetch('https://igor-plaxin.ru/star-way/event ', {
+    const response = await fetch('https://igor-plaxin.store/star-way/event ', {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('access_token')}`,
       },
@@ -392,7 +390,7 @@ const fetchEvents = async () => {
 
 const fetchGroups = async () => {
   try {
-    const response = await fetch('https://igor-plaxin.ru/star-way/group ', {
+    const response = await fetch('https://igor-plaxin.store/star-way/group ', {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('access_token')}`,
       },
@@ -414,11 +412,14 @@ const fetchGroups = async () => {
 
 const fetchRequests = async () => {
   try {
-    const response = await fetch('https://igor-plaxin.ru/star-way/request ', {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-      },
-    });
+    const response = await fetch(
+      'https://igor-plaxin.store/star-way/request ',
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      }
+    );
 
     if (!response.ok) throw new Error('Ошибка при загрузке заявок');
 
@@ -443,12 +444,15 @@ const getFullName = (profile) => {
 
 const fetchProfile = async () => {
   try {
-    const response = await fetch('https://igor-plaxin.ru/star-way/profile ', {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-      },
-    });
+    const response = await fetch(
+      'https://igor-plaxin.store/star-way/profile ',
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      }
+    );
 
     if (!response.ok) throw new Error('Ошибка загрузки профиля');
 

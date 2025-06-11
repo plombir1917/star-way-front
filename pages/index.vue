@@ -734,7 +734,7 @@ const truncateDescription = (description) => {
 // Загрузка мастер-классов
 const fetchMClasses = async () => {
   try {
-    const response = await fetch('https://igor-plaxin.ru/star-way/mclass ', {
+    const response = await fetch('https://igor-plaxin.store/star-way/mclass ', {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('access_token')}`,
       },

@@ -662,11 +662,14 @@ const roleLabels = {
 const fetchAccounts = async () => {
   try {
     loading.value = true;
-    const response = await fetch('https://igor-plaxin.ru/star-way/account ', {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-      },
-    });
+    const response = await fetch(
+      'https://igor-plaxin.store/star-way/account ',
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      }
+    );
 
     if (!response.ok) {
       throw new Error('Ошибка загрузки аккаунтов');
@@ -697,8 +700,8 @@ const saveAccount = async () => {
     const isCreate = !payload.id;
 
     const url = isCreate
-      ? 'https://igor-plaxin.ru/star-way/account '
-      : `https://igor-plaxin.ru/star-way/account/ ${payload.id}`;
+      ? 'https://igor-plaxin.store/star-way/account '
+      : `https://igor-plaxin.store/star-way/account/ ${payload.id}`;
     const method = isCreate ? 'POST' : 'PATCH';
 
     const response = await fetch(url, {
@@ -757,7 +760,7 @@ const confirmDeleteAccount = (account) => {
 // Удаление аккаунта
 const deleteAccount = async () => {
   try {
-    const url = `https://igor-plaxin.ru/star-way/account/${accountToDelete.value.id}`;
+    const url = `https://igor-plaxin.store/star-way/account/${accountToDelete.value.id}`;
     const response = await fetch(url, {
       method: 'DELETE',
       headers: {

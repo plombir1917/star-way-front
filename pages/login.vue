@@ -231,7 +231,7 @@ async function handleLogin() {
     isLoading.value = true;
     errorMessage.value = '';
 
-    const response = await fetch('https://igor-plaxin.ru/star-way/login', {
+    const response = await fetch('https://igor-plaxin.store/star-way/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

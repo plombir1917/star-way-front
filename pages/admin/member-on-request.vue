@@ -441,7 +441,7 @@ const newRelation = ref({
 const fetchUserRole = async () => {
   try {
     const response = await fetch(
-      'https://igor-plaxin.ru/star-way/token-payload ',
+      'https://igor-plaxin.store/star-way/token-payload ',
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
@@ -467,11 +467,14 @@ const getFullName = (member) => {
 // Загрузка заявок
 const fetchRequests = async () => {
   try {
-    const response = await fetch('https://igor-plaxin.ru/star-way/request ', {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-      },
-    });
+    const response = await fetch(
+      'https://igor-plaxin.store/star-way/request ',
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      }
+    );
     if (!response.ok) throw new Error('Ошибка загрузки заявок');
     requests.value = await response.json();
   } catch (error) {
@@ -485,11 +488,11 @@ const fetchRequests = async () => {
 // Загрузка участников
 const fetchMembers = async () => {
   try {
-    let url = 'https://igor-plaxin.ru/star-way/member ';
+    let url = 'https://igor-plaxin.store/star-way/member ';
 
     // Используем новый API для пользователей с ролью USER
     if (userRole.value === 'USER') {
-      url = 'https://igor-plaxin.ru/star-way/member/by-user ';
+      url = 'https://igor-plaxin.store/star-way/member/by-user ';
     }
 
     const response = await fetch(url, {
@@ -512,7 +515,7 @@ const fetchMembers = async () => {
 const fetchRelations = async () => {
   try {
     const response = await fetch(
-      'https://igor-plaxin.ru/star-way/member-on-request ',
+      'https://igor-plaxin.store/star-way/member-on-request ',
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
@@ -641,7 +644,7 @@ const addMemberToRequest = async () => {
 
     // Добавляем новую связь
     const response = await fetch(
-      'https://igor-plaxin.ru/star-way/member-on-request ',
+      'https://igor-plaxin.store/star-way/member-on-request ',
       {
         method: 'POST',
         headers: {
@@ -685,7 +688,7 @@ const deleteRelation = async () => {
     const { member_id, request_id } = relationToDelete.value;
 
     const response = await fetch(
-      'https://igor-plaxin.ru/star-way/member-on-request ',
+      'https://igor-plaxin.store/star-way/member-on-request ',
       {
         method: 'DELETE',
         headers: {

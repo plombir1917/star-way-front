@@ -161,7 +161,7 @@ const avatarUrl = computed(() => {
 // Загрузка данных профиля
 const fetchProfile = async () => {
   try {
-    const response = await fetch('https://igor-plaxin.ru/star-way/profile', {
+    const response = await fetch('https://igor-plaxin.store/star-way/profile', {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${localStorage.getItem('access_token')}`,
@@ -191,7 +191,7 @@ const fetchProfile = async () => {
 const fetchUserRole = async () => {
   try {
     const response = await fetch(
-      'https://igor-plaxin.ru/star-way/token-payload',
+      'https://igor-plaxin.store/star-way/token-payload',
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,

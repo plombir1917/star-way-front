@@ -584,7 +584,7 @@ const profileData = ref({
 // Функция получения профиля
 const fetchProfile = async () => {
   try {
-    const response = await fetch('https://igor-plaxin.ru/star-way/profile', {
+    const response = await fetch('https://igor-plaxin.store/star-way/profile', {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('access_token')}`,
       },
@@ -605,7 +605,7 @@ const fetchProfile = async () => {
 const fetchUserRole = async () => {
   try {
     const response = await fetch(
-      'https://igor-plaxin.ru/star-way/token-payload',
+      'https://igor-plaxin.store/star-way/token-payload',
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
@@ -713,10 +713,10 @@ const displayedPages = computed(() => {
 const fetchMembers = async () => {
   try {
     loading.value = true;
-    let url = 'https://igor-plaxin.ru/star-way/member';
+    let url = 'https://igor-plaxin.store/star-way/member';
     // Используем новый API для пользователей с ролью USER
     if (userRole.value === 'USER') {
-      url = 'https://igor-plaxin.ru/star-way/member/by-user';
+      url = 'https://igor-plaxin.store/star-way/member/by-user';
     }
     const response = await fetch(url, {
       headers: {
@@ -749,7 +749,7 @@ const fetchMembers = async () => {
 
 const fetchGroups = async () => {
   try {
-    const response = await fetch('https://igor-plaxin.ru/star-way/group', {
+    const response = await fetch('https://igor-plaxin.store/star-way/group', {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('access_token')}`,
       },
@@ -823,8 +823,8 @@ const closeMemberModal = () => {
 const saveMember = async () => {
   try {
     const url = isEditing.value
-      ? `https://igor-plaxin.ru/star-way/member/${memberForm.value.id}`
-      : 'https://igor-plaxin.ru/star-way/member';
+      ? `https://igor-plaxin.store/star-way/member/${memberForm.value.id}`
+      : 'https://igor-plaxin.store/star-way/member';
     const method = isEditing.value ? 'PATCH' : 'POST';
     const response = await fetch(url, {
       method,
@@ -871,7 +871,7 @@ const closeDeleteModal = () => {
 
 const deleteMember = async () => {
   try {
-    const url = `https://igor-plaxin.ru/star-way/member/${memberToDelete.value.id}`;
+    const url = `https://igor-plaxin.store/star-way/member/${memberToDelete.value.id}`;
     const response = await fetch(url, {
       method: 'DELETE',
       headers: {

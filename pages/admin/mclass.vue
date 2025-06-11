@@ -477,7 +477,7 @@ const formatCost = (cost) => {
 const fetchMClasses = async () => {
   try {
     loading.value = true;
-    const response = await fetch('https://igor-plaxin.ru/star-way/mclass ', {
+    const response = await fetch('https://igor-plaxin.store/star-way/mclass ', {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('access_token')}`,
       },
@@ -508,8 +508,8 @@ const fetchMClasses = async () => {
 const saveMClass = async () => {
   try {
     const url = isEditing.value
-      ? `https://igor-plaxin.ru/star-way/mclass/ ${mclassForm.value.id}`
-      : 'https://igor-plaxin.ru/star-way/mclass ';
+      ? `https://igor-plaxin.store/star-way/mclass/ ${mclassForm.value.id}`
+      : 'https://igor-plaxin.store/star-way/mclass ';
     const method = isEditing.value ? 'PATCH' : 'POST';
 
     const response = await fetch(url, {
@@ -565,7 +565,7 @@ const confirmDeleteMClass = (mclass) => {
 // Удаление мастер-класса
 const deleteMClass = async () => {
   try {
-    const url = `https://igor-plaxin.ru/star-way/mclass/ ${mclassToDelete.value.id}`;
+    const url = `https://igor-plaxin.store/star-way/mclass/ ${mclassToDelete.value.id}`;
     const response = await fetch(url, {
       method: 'DELETE',
       headers: {

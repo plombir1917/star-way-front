@@ -318,7 +318,7 @@ const userRole = ref(null);
 // Функция получения профиля
 const fetchProfile = async () => {
   try {
-    const response = await fetch('https://igor-plaxin.ru/star-way/profile', {
+    const response = await fetch('https://igor-plaxin.store/star-way/profile', {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('access_token')}`,
       },
@@ -338,7 +338,7 @@ const fetchProfile = async () => {
 const fetchUserRole = async () => {
   try {
     const response = await fetch(
-      'https://igor-plaxin.ru/star-way/token-payload',
+      'https://igor-plaxin.store/star-way/token-payload',
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
@@ -357,7 +357,7 @@ const fetchUserRole = async () => {
 // Загрузка данных
 const fetchGroups = async () => {
   try {
-    const response = await fetch('https://igor-plaxin.ru/star-way/group', {
+    const response = await fetch('https://igor-plaxin.store/star-way/group', {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('access_token')}`,
       },
@@ -431,8 +431,8 @@ const closeModal = () => {
 const saveGroup = async () => {
   try {
     const url = isEditing.value
-      ? `https://igor-plaxin.ru/star-way/group/${formData.value.id}`
-      : 'https://igor-plaxin.ru/star-way/group';
+      ? `https://igor-plaxin.store/star-way/group/${formData.value.id}`
+      : 'https://igor-plaxin.store/star-way/group';
     const method = isEditing.value ? 'PATCH' : 'POST';
     const payload = { ...formData.value };
     if (!isEditing.value) delete payload.id;
@@ -465,7 +465,7 @@ const deleteGroup = async (id) => {
   if (!confirm('Вы уверены, что хотите удалить этот коллектив?')) return;
   try {
     const response = await fetch(
-      `https://igor-plaxin.ru/star-way/group/${id}`,
+      `https://igor-plaxin.store/star-way/group/${id}`,
       {
         method: 'DELETE',
         headers: {

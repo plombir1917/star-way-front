@@ -854,7 +854,7 @@ const displayedPages = computed(() => {
 // Методы
 const fetchUsers = async () => {
   try {
-    const response = await fetch('https://igor-plaxin.ru/star-way/user', {
+    const response = await fetch('https://igor-plaxin.store/star-way/user', {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('access_token')}`,
       },
@@ -960,8 +960,8 @@ const closeUserModal = () => {
 const saveUser = async () => {
   try {
     const url = isEditing.value
-      ? `https://igor-plaxin.ru/star-way/user/${userForm.value.id}`
-      : 'https://igor-plaxin.ru/star-way/user';
+      ? `https://igor-plaxin.store/star-way/user/${userForm.value.id}`
+      : 'https://igor-plaxin.store/star-way/user';
 
     const method = isEditing.value ? 'PATCH' : 'POST';
 
@@ -1042,7 +1042,7 @@ const closeDeleteModal = () => {
 
 const deleteUser = async () => {
   try {
-    const url = `https://igor-plaxin.ru/star-way/user/${userToDelete.value.id}`;
+    const url = `https://igor-plaxin.store/star-way/user/${userToDelete.value.id}`;
 
     const response = await fetch(url, {
       method: 'DELETE',
