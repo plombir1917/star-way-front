@@ -131,12 +131,21 @@
               </td>
               <td
                 class="px-6 py-4 whitespace-nowrap text-right text-base font-medium flex gap-2 justify-end"
-                v-if="canEdit"
+                v-if="canEdit || userRole === 'USER'"
               >
                 <button
-                  @click="openEditModal(request)"
+                  v-if="canEdit"
+                  @click="openDetailsModal(request)"
                   class="text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300 transition duration-200"
                   :disabled="!canEdit"
+                >
+                  Подробнее
+                </button>
+                <button
+                  v-if="userRole === 'USER' && request.status === 'SEND'"
+                  @click="openEditModal(request)"
+                  class="text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300 transition duration-200"
+                  title="Редактировать"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -153,12 +162,10 @@
                     />
                   </svg>
                 </button>
-                <!-- Кнопка удаления -->
                 <button
                   @click="deleteRequest(request.id)"
                   class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition duration-200"
                   title="Удалить"
-                  :disabled="!canEdit"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -212,70 +219,233 @@
                   class="text-lg leading-6 font-medium text-gray-900 dark:text-white"
                   id="modal-title"
                 >
-                  {{ isEditing ? 'Редактировать заявку' : 'Создать заявку' }}
+                  {{
+                    detailsMode
+                      ? 'Информация о заявке'
+                      : isEditing
+                      ? 'Редактировать заявку'
+                      : 'Создать заявку'
+                  }}
                 </h3>
                 <div class="mt-4">
                   <form @submit.prevent="saveRequest" class="space-y-4">
-                    <div>
-                      <label
-                        class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                        >Название</label
-                      >
-                      <input
-                        type="text"
-                        v-model="formData.name"
-                        required
-                        class="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition duration-200"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                        >Описание</label
-                      >
-                      <textarea
-                        v-model="formData.description"
-                        rows="4"
-                        required
-                        class="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition duration-200"
-                      ></textarea>
-                    </div>
-                    <div>
-                      <label
-                        class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                        >Мероприятие</label
-                      >
-                      <select
-                        v-model.number="formData.event_id"
-                        required
-                        class="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition duration-200"
-                      >
-                        <option value="" disabled>Выберите мероприятие</option>
-                        <option
-                          v-for="event in events"
-                          :key="event.id"
-                          :value="event.id"
+                    <template v-if="!detailsMode">
+                      <div>
+                        <label
+                          class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                          >Название</label
                         >
-                          {{ event.id }} — {{ event.name }}
-                        </option>
-                      </select>
-                    </div>
-
-                    <!-- Поле для изменения статуса (только при редактировании) -->
-                    <div v-if="isEditing">
-                      <label
-                        class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                        >Статус</label
-                      >
-                      <select
-                        v-model="formData.status"
-                        required
-                        class="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition duration-200"
-                      >
-                        <option value="SEND">В ожидании</option>
-                        <option value="ACCEPTED">Одобрено</option>
-                        <option value="REJECTED">Отклонено</option>
-                      </select>
+                        <input
+                          type="text"
+                          v-model="formData.name"
+                          required
+                          :readonly="
+                            userRole === 'USER' && formData.status !== 'SEND'
+                          "
+                          :class="[
+                            'mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none sm:text-sm transition duration-200',
+                            userRole === 'USER' && formData.status !== 'SEND'
+                              ? 'bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white border-gray-300 dark:border-gray-700 opacity-80 cursor-not-allowed'
+                              : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-purple-500 focus:border-purple-500',
+                          ]"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                          >Описание</label
+                        >
+                        <textarea
+                          v-model="formData.description"
+                          rows="4"
+                          required
+                          :readonly="
+                            userRole === 'USER' && formData.status !== 'SEND'
+                          "
+                          :class="[
+                            'mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none sm:text-sm transition duration-200',
+                            userRole === 'USER' && formData.status !== 'SEND'
+                              ? 'bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white border-gray-300 dark:border-gray-700 opacity-80 cursor-not-allowed'
+                              : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-purple-500 focus:border-purple-500',
+                          ]"
+                        ></textarea>
+                      </div>
+                      <div>
+                        <label
+                          class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                          >Мероприятие</label
+                        >
+                        <select
+                          v-model.number="formData.event_id"
+                          required
+                          :disabled="
+                            userRole === 'USER' && formData.status !== 'SEND'
+                          "
+                          :class="[
+                            'mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none sm:text-sm transition duration-200',
+                            userRole === 'USER' && formData.status !== 'SEND'
+                              ? 'bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white border-gray-300 dark:border-gray-700 opacity-80 cursor-not-allowed'
+                              : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-purple-500 focus:border-purple-500',
+                          ]"
+                        >
+                          <option value="" disabled>
+                            Выберите мероприятие
+                          </option>
+                          <option
+                            v-for="event in events"
+                            :key="event.id"
+                            :value="event.id"
+                          >
+                            {{ event.id }} — {{ event.name }}
+                          </option>
+                        </select>
+                      </div>
+                    </template>
+                    <template v-else>
+                      <div class="flex items-center">
+                        <span class="mr-2 text-gray-400">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M12 11c1.104 0 2-.896 2-2V7a2 2 0 10-4 0v2c0 1.104.896 2 2 2zm6 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2v-6a2 2 0 012-2h8a2 2 0 012 2z"
+                            />
+                          </svg>
+                        </span>
+                        <div>
+                          <label
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                            >Название</label
+                          >
+                          <div
+                            class="mt-1 block w-full rounded-md py-2 px-3 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-700 opacity-80 cursor-not-allowed"
+                          >
+                            {{ formData.name }}
+                          </div>
+                        </div>
+                      </div>
+                      <div class="flex items-center mt-2">
+                        <span class="mr-2 text-gray-400">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M12 11c1.104 0 2-.896 2-2V7a2 2 0 10-4 0v2c0 1.104.896 2 2 2zm6 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2v-6a2 2 0 012-2h8a2 2 0 012 2z"
+                            />
+                          </svg>
+                        </span>
+                        <div>
+                          <label
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                            >Описание</label
+                          >
+                          <div
+                            class="mt-1 block w-full rounded-md py-2 px-3 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-700 opacity-80 cursor-not-allowed whitespace-pre-line"
+                          >
+                            {{ formData.description }}
+                          </div>
+                        </div>
+                      </div>
+                      <div class="flex items-center mt-2">
+                        <span class="mr-2 text-gray-400">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M12 11c1.104 0 2-.896 2-2V7a2 2 0 10-4 0v2c0 1.104.896 2 2 2zm6 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2v-6a2 2 0 012-2h8a2 2 0 012 2z"
+                            />
+                          </svg>
+                        </span>
+                        <div>
+                          <label
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                            >Мероприятие</label
+                          >
+                          <div
+                            class="mt-1 block w-full rounded-md py-2 px-3 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-700 opacity-80 cursor-not-allowed"
+                          >
+                            {{ formData.event_id }} —
+                            {{
+                              events.find((e) => e.id === formData.event_id)
+                                ?.name || ''
+                            }}
+                          </div>
+                        </div>
+                      </div>
+                    </template>
+                    <div
+                      v-if="isEditing || detailsMode"
+                      class="mt-2 flex items-center"
+                    >
+                      <span v-if="detailsMode" class="mr-2 text-green-500">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          class="h-4 w-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15.232 5.232l3.536 3.536M9 13h3l8-8a2.828 2.828 0 10-4-4l-8 8v3zm0 0v3h3"
+                          />
+                        </svg>
+                      </span>
+                      <div class="w-full">
+                        <label
+                          class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                          >Статус</label
+                        >
+                        <template
+                          v-if="
+                            (isEditing && userRole !== 'USER') || detailsMode
+                          "
+                        >
+                          <select
+                            v-model="formData.status"
+                            required
+                            :class="
+                              detailsMode
+                                ? 'mt-1 block w-full border-2 border-green-400 dark:border-green-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition duration-200'
+                                : 'mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition duration-200'
+                            "
+                          >
+                            <option value="SEND">В ожидании</option>
+                            <option value="ACCEPTED">Одобрено</option>
+                            <option value="REJECTED">Отклонено</option>
+                          </select>
+                        </template>
+                        <template v-else>
+                          <div
+                            class="mt-1 block w-full rounded-md py-2 px-3 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-700 opacity-80 cursor-not-allowed"
+                          >
+                            {{ statusLabel(formData.status) }}
+                          </div>
+                        </template>
+                      </div>
                     </div>
                   </form>
                 </div>
@@ -290,7 +460,13 @@
               @click="saveRequest"
               class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-purple-600 text-base font-medium text-white hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 sm:ml-3 sm:w-auto sm:text-sm transition duration-200"
             >
-              {{ isEditing ? 'Сохранить' : 'Создать' }}
+              {{
+                detailsMode
+                  ? 'Сохранить статус'
+                  : isEditing || userRole === 'USER'
+                  ? 'Сохранить'
+                  : 'Создать'
+              }}
             </button>
             <button
               type="button"
@@ -323,6 +499,7 @@ const formData = ref({
   status: null,
 });
 const userRole = ref(null); // Хранение роли пользователя
+const detailsMode = ref(false);
 
 // Функция для получения роли пользователя
 const fetchUserRole = async () => {
@@ -406,6 +583,14 @@ const openEditModal = (request) => {
   showModal.value = true;
 };
 
+// Открытие модального окна только для изменения статуса
+const openDetailsModal = (request) => {
+  isEditing.value = false;
+  formData.value = { ...request };
+  showModal.value = true;
+  detailsMode.value = true;
+};
+
 // Закрытие модального окна
 const closeModal = () => {
   showModal.value = false;
@@ -415,22 +600,27 @@ const closeModal = () => {
     event_id: null,
     status: null,
   };
+  detailsMode.value = false;
 };
 
 // Сохранение заявки (создание или обновление)
 const saveRequest = async () => {
   try {
-    const url = isEditing.value
-      ? `https://igor-plaxin.store/star-way/request/${formData.value.id}`
-      : 'https://igor-plaxin.store/star-way/request';
-    const method = isEditing.value ? 'PATCH' : 'POST';
-
-    // Для новой заявки устанавливаем статус по умолчанию
-    const requestData = { ...formData.value };
-    if (!isEditing.value) {
-      requestData.status = 'SEND'; // Устанавливаем статус по умолчанию
+    let url, method, requestData;
+    if (detailsMode.value) {
+      url = `https://igor-plaxin.store/star-way/request/${formData.value.id}`;
+      method = 'PATCH';
+      requestData = { status: formData.value.status };
+    } else {
+      url = isEditing.value
+        ? `https://igor-plaxin.store/star-way/request/${formData.value.id}`
+        : 'https://igor-plaxin.store/star-way/request';
+      method = isEditing.value ? 'PATCH' : 'POST';
+      requestData = { ...formData.value };
+      if (!isEditing.value) {
+        requestData.status = 'SEND';
+      }
     }
-
     const response = await fetch(url, {
       method,
       headers: {
@@ -439,12 +629,15 @@ const saveRequest = async () => {
       },
       body: JSON.stringify(requestData),
     });
-
     if (!response.ok) throw new Error('Ошибка при сохранении заявки');
     await fetchRequests();
     closeModal();
     toaster.value?.addToast(
-      isEditing.value ? 'Заявка успешно обновлена' : 'Заявка успешно создана',
+      detailsMode.value
+        ? 'Статус заявки успешно обновлён'
+        : isEditing.value
+        ? 'Заявка успешно обновлена'
+        : 'Заявка успешно создана',
       'success'
     );
   } catch (error) {
