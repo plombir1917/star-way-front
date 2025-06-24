@@ -240,11 +240,15 @@
                           v-model="formData.name"
                           required
                           :readonly="
-                            userRole === 'USER' && formData.status !== 'SEND'
+                            userRole === 'USER' &&
+                            isEditing &&
+                            formData.status !== 'SEND'
                           "
                           :class="[
                             'mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none sm:text-sm transition duration-200',
-                            userRole === 'USER' && formData.status !== 'SEND'
+                            userRole === 'USER' &&
+                            isEditing &&
+                            formData.status !== 'SEND'
                               ? 'bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white border-gray-300 dark:border-gray-700 opacity-80 cursor-not-allowed'
                               : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-purple-500 focus:border-purple-500',
                           ]"
@@ -260,11 +264,15 @@
                           rows="4"
                           required
                           :readonly="
-                            userRole === 'USER' && formData.status !== 'SEND'
+                            userRole === 'USER' &&
+                            isEditing &&
+                            formData.status !== 'SEND'
                           "
                           :class="[
                             'mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none sm:text-sm transition duration-200',
-                            userRole === 'USER' && formData.status !== 'SEND'
+                            userRole === 'USER' &&
+                            isEditing &&
+                            formData.status !== 'SEND'
                               ? 'bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white border-gray-300 dark:border-gray-700 opacity-80 cursor-not-allowed'
                               : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-purple-500 focus:border-purple-500',
                           ]"
@@ -279,11 +287,15 @@
                           v-model.number="formData.event_id"
                           required
                           :disabled="
-                            userRole === 'USER' && formData.status !== 'SEND'
+                            userRole === 'USER' &&
+                            isEditing &&
+                            formData.status !== 'SEND'
                           "
                           :class="[
                             'mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none sm:text-sm transition duration-200',
-                            userRole === 'USER' && formData.status !== 'SEND'
+                            userRole === 'USER' &&
+                            isEditing &&
+                            formData.status !== 'SEND'
                               ? 'bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white border-gray-300 dark:border-gray-700 opacity-80 cursor-not-allowed'
                               : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-purple-500 focus:border-purple-500',
                           ]"
